@@ -77,45 +77,46 @@ extension MainViewPresenter: MainViewPresenterProtocol {
     
     func fetchWeatherForCurrentLocation() {
         locationService?.getCurrentLocation { [weak self] result in
+            guard let self else { return }
             switch result {
             case .success(let coordinates):
-                let existingName = self?.locationStorage.get()?.cityName ?? ""
-                self?.saveLastLocation(
+                let existingName = self.locationStorage.get()?.cityName ?? ""
+                self.saveLastLocation(
                     lon: coordinates.longitude,
                     lat: coordinates.latitude,
                     cityName: existingName
                 )
-                self?.fetchWeatherByCoordinates(lon: coordinates.longitude, lat: coordinates.latitude)
+                self.fetchWeatherByCoordinates(lon: coordinates.longitude, lat: coordinates.latitude)
             case .failure(let error):
-                DispatchQueue.main.async { self?.view?.displayError(error: error) }
+                DispatchQueue.main.async { self.view?.displayError(error: error) }
             }
         }
     }
     
     func searchWeather(for cityName: String) {
         locationService?.getCoordinates(for: cityName) { [weak self] result in
+            guard let self else { return }
             switch result {
             case .success(let coordinates):
-                self?.saveLastLocation(lon: coordinates.longitude, lat: coordinates.latitude, cityName: cityName)
-                self?.fetchWeatherByCoordinates(lon: coordinates.longitude, lat: coordinates.latitude)
+                self.saveLastLocation(lon: coordinates.longitude, lat: coordinates.latitude, cityName: cityName)
+                self.fetchWeatherByCoordinates(lon: coordinates.longitude, lat: coordinates.latitude)
             case .failure(let error):
-                DispatchQueue.main.async { self?.view?.displayError(error: error) }
+                DispatchQueue.main.async {self.view?.displayError(error: error) }
             }
         }
     }
     
     func fetchWeatherByCoordinates(lon: Double, lat: Double) {
         client.fetch(lon: lon, lat: lat) { [weak self] result in
+            guard let self else { return }
             DispatchQueue.main.async {
                 switch result {
                 case .success(let weather):
-                    self?.saveLastLocation(lon: lon, lat: lat, cityName: weather.city.name)
-                    
-                    if let vm = self?.createViewModel(from: weather) {
-                        self?.view?.displayWeather(data: vm)
-                    }
+                    self.saveLastLocation(lon: lon, lat: lat, cityName: weather.city.name)
+                    let vm = self.createViewModel(from: weather)
+                    self.view?.displayWeather(data: vm)
                 case .failure(let error):
-                    self?.view?.displayError(error: error)
+                    self.view?.displayError(error: error)
                 }
             }
         }

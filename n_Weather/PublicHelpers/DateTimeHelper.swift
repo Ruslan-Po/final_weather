@@ -1,6 +1,9 @@
 import Foundation
 
 struct DateTimeHelper {
+    
+    private init(){}
+    
     private static let hoursFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"

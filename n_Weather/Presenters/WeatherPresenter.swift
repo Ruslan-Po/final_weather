@@ -79,7 +79,6 @@ extension MainViewPresenter: MainViewPresenterProtocol {
         locationService?.getCurrentLocation { [weak self] result in
             switch result {
             case .success(let coordinates):
-                // НЕ затираем cityName пустой строкой — берём уже сохранённое, если было
                 let existingName = self?.locationStorage.get()?.cityName ?? ""
                 self?.saveLastLocation(
                     lon: coordinates.longitude,
@@ -110,7 +109,6 @@ extension MainViewPresenter: MainViewPresenterProtocol {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let weather):
-                    // нормализуем и сохраняем корректное имя из API
                     self?.saveLastLocation(lon: lon, lat: lat, cityName: weather.city.name)
                     
                     if let vm = self?.createViewModel(from: weather) {
@@ -173,7 +171,6 @@ final class ForecastViewPresenter: ForecastViewPresenterProtocol {
                     if let filtered = self?.filter(weatherModel: weatherModel) {
                         self?.view?.getForecast(filtered)
                     }
-                    // актуализируем сохранённые данные именем из API
                     let updated = LastLocation(
                         lon: lon,
                         lat: lat,

@@ -40,14 +40,13 @@ class MainViewController: UIViewController {
     
     lazy var greetingsLabel: UILabel = {
         let label = UILabel()
-        label.text = Greetings.setGreetingByTime.uppercased()
+       
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     lazy var timeLabel: UILabel = {
         let label = UILabel()
-        label.text = DateTimeHelper.formatTime(from: Date())
         label.font = UIFont.systemFont(ofSize: 20, weight: .light)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -55,7 +54,6 @@ class MainViewController: UIViewController {
     
     lazy var dateLabel: UILabel = {
         let label = UILabel()
-        label.text = DateTimeHelper.formatDate(from: Date()).uppercased()
         label.font = UIFont.systemFont(ofSize: 30, weight: .light)
         label.translatesAutoresizingMaskIntoConstraints=false
         return label
@@ -191,12 +189,16 @@ class MainViewController: UIViewController {
 
 
 extension MainViewController: MainViewControllerProtocol {
+    
     func displayWeather(data: MainViewModel) {
         sunsetStackView.timeLabel.text = data.sunset
         sunriseStackView.timeLabel.text = data.sunrise
         temperatureLabel.text = data.currentTemp
         weatherImage.image = UIImage(named: data.weatherImage)
         cityLabel.text = data.cityName
+        greetingsLabel.text = data.greeting
+        timeLabel.text = data.currentTime
+        dateLabel.text = data.currentDate
     }
 
     func displayError(error: Error) {

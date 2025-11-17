@@ -1,9 +1,8 @@
 import Foundation
 
 struct Greetings {
-    static var setGreetingByTime: String {
+     var setGreetingByTime: String {
         let hour = Calendar.current.component(.hour, from: Date())
-        
         switch hour {
         case 5..<12:
             return "Good Morning"

@@ -22,6 +22,7 @@ final class MainViewPresenter {
     private let client: WeatherClientProtocol
     var locationService: LocationServiceProtocol?
     private let locationStorage: LocationStorageProtocol
+    private let greetingHelper = Greetings()
     
     init(view: MainViewControllerProtocol,
          locationService: LocationServiceProtocol,
@@ -42,12 +43,18 @@ final class MainViewPresenter {
         let sunrise = DateTimeHelper.formatTime(from: weather.city.sunrise)
         let sunset = DateTimeHelper.formatTime(from: weather.city.sunset)
         let cityName = weather.city.name
+        let greeting = greetingHelper.setGreetingByTime
+        let time = DateTimeHelper.formatTime(from: Date()).uppercased()
+        let date = DateTimeHelper.formatDate(from: Date()).uppercased()
         
         return MainViewModel(cityName: cityName,
                              currentTemp: currentTemp,
                              weatherImage: weatherImage,
                              sunrise: sunrise,
-                             sunset: sunset)
+                             sunset: sunset,
+                             greeting: greeting,
+                             currentTime: time,
+                             currentDate: date)
     }
     
     private func createEmptyViewModel() -> MainViewModel {
@@ -56,7 +63,10 @@ final class MainViewPresenter {
             currentTemp: "",
             weatherImage: "",
             sunrise: "",
-            sunset: ""
+            sunset: "",
+            greeting: "",
+            currentTime: "",
+            currentDate: ""
         )
     }
     
@@ -67,6 +77,7 @@ final class MainViewPresenter {
 }
 
 extension MainViewPresenter: MainViewPresenterProtocol {
+
     func start() {
         if let saved = locationStorage.get() {
             fetchWeatherByCoordinates(lon: saved.lon, lat: saved.lat)

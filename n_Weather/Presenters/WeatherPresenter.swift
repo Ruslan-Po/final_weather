@@ -17,7 +17,9 @@ protocol ForecastViewPresenterProtocol: WeatherViewPresenterProtocol {
     func getSavedCityName() -> String?
 }
 
-final class MainViewPresenter {
+
+final class MainViewPresenter: MainViewPresenterProtocol {
+  
     weak var view: MainViewControllerProtocol?
     private let client: WeatherClientProtocol
     var locationService: LocationServiceProtocol?
@@ -74,10 +76,8 @@ final class MainViewPresenter {
         let value = LastLocation(lon: lon, lat: lat, cityName: cityName, updatedAt: Date())
         locationStorage.save(value)
     }
-}
-
-extension MainViewPresenter: MainViewPresenterProtocol {
-
+    
+    
     func start() {
         if let saved = locationStorage.get() {
             fetchWeatherByCoordinates(lon: saved.lon, lat: saved.lat)
@@ -133,6 +133,7 @@ extension MainViewPresenter: MainViewPresenterProtocol {
         }
     }
 }
+
 
 final class ForecastViewPresenter: ForecastViewPresenterProtocol {
     weak var view: ForecastViewControllerProtocol?

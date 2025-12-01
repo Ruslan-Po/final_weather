@@ -40,7 +40,6 @@ class MainViewController: UIViewController {
     
     lazy var greetingsLabel: UILabel = {
         let label = UILabel()
-       
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()

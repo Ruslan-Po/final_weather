@@ -8,7 +8,20 @@ enum WeatherErrors: Error, Sendable {
 }
 
 class WeatherService {
-    let apiKey = "7cdd70a88a12f2058c790ed2952ac54a"
+    
+     let apiKey: String
+     private let session: URLSessionProtocol
+     private let decoder: JSONDecoder
+     
+     init(
+         apiKey: String = "7cdd70a88a12f2058c790ed2952ac54a",
+         session: URLSessionProtocol = URLSession.shared,
+         decoder: JSONDecoder = JSONDecoder()
+     ) {
+         self.apiKey = apiKey
+         self.session = session
+         self.decoder = decoder
+     }
   
     func createWeatherURL(lon: Double, lat: Double, key: String) -> URL? {
         var components = URLComponents()
@@ -32,9 +45,9 @@ class WeatherService {
                 return
             }
             do {
-                let (data, _) = try await URLSession.shared.data(from: url)
+                let (data, _) = try await session.data(from: url)
                 do {
-                    let weather = try JSONDecoder().decode(WeatherModel.self, from: data)
+                    let weather = try decoder.decode(WeatherModel.self, from: data)
                     completion(.success(weather))
                 } catch {
                     completion(.failure(WeatherErrors.decodingFailed))

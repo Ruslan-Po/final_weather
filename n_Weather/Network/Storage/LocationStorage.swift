@@ -7,17 +7,17 @@ protocol LocationStorageProtocol {
 }
 
 final class LocationStorageUD: LocationStorageProtocol {
-    private let d = UserDefaults.standard
+    private let data = UserDefaults.standard
     private let key = "last_location"
 
     func save(_ value: LastLocation) {
         if let data = try? JSONEncoder().encode(value) {
-            d.set(data, forKey: key)
+            self.data.set(data, forKey: key)
         }
     }
     func get() -> LastLocation? {
-        guard let data = d.data(forKey: key) else { return nil }
+        guard let data = data.data(forKey: key) else { return nil }
         return try? JSONDecoder().decode(LastLocation.self, from: data)
     }
-    func clear() { d.removeObject(forKey: key) }
+    func clear() { data.removeObject(forKey: key) }
 }

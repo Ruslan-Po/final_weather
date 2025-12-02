@@ -4,13 +4,13 @@ struct DateTimeHelper {
     
     private init(){}
     
-    private static let hoursFormatter: DateFormatter = {
+    static let hoursFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         return formatter
     }()
     
-    private static let dateFormatter: DateFormatter = {
+    static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "d MMM"
         return formatter

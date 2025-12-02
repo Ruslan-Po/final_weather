@@ -15,7 +15,7 @@ struct ImagesByCodeHelper {
         case 801...804:
             return "cloud"
         default:
-            return "uncknow"
+            return "uncknown"
         }
     }
 }

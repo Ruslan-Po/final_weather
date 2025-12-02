@@ -9,7 +9,6 @@ final class MainAssembler {
               ForecastAssembler.createForecastViewController(container: container)
           })
         
-        
         let presenter = MainViewPresenter(
             view: view,
             locationService: container.locationService,
@@ -26,6 +25,7 @@ final class MainAssembler {
 final class ForecastAssembler {
     static func createForecastViewController(container: AppContainer) -> UIViewController {
         let view = ForecastViewController()
+        
         let presenter = ForecastViewPresenter(
             view: view,
             client: container.client,

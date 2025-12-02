@@ -36,7 +36,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
         self.locationStorage = locationStorage
     }
     
-    private func createViewModel(from weather: WeatherModel) -> MainViewModel {
+     func createViewModel(from weather: WeatherModel) -> MainViewModel {
         guard let daydata = weather.list.first else {
             return createEmptyViewModel()
         }
@@ -59,7 +59,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
                              currentDate: date)
     }
     
-    private func createEmptyViewModel() -> MainViewModel {
+     func createEmptyViewModel() -> MainViewModel {
         return MainViewModel(
             cityName: "",
             currentTemp: "",

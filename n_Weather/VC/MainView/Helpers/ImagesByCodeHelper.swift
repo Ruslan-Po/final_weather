@@ -1,6 +1,5 @@
-
 struct ImagesByCodeHelper {
-    static func getImageNameByCode (code: Int) -> String {
+    static func getImageNameByCode(code: Int) -> String {
         switch code {
         case 200...232:
            return "storm"

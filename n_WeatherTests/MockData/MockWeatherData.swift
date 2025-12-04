@@ -7,7 +7,7 @@ extension WeatherModel {
         cod: String = "200",
         list: [Forecast] = [.mock()],
         city: City = .mock(),
-    )-> WeatherModel {
+    ) -> WeatherModel {
         return WeatherModel(
             cod: cod,
             list: list,
@@ -18,35 +18,36 @@ extension WeatherModel {
 
 extension Forecast {
     static func mock(
-        dt: Int = 1764759478,
+        datetime: Int = 1764759478,
         date: String = "2025-12-03 10:57:49",
         main: Main = .mock(),
         weather: [Weather] = [.mock()]
-    )-> Forecast {
-        let json = """
-            {
-            "dt" : \(dt),
-            "dt_txt": \(date),
-            "main": {
-                "temp": \(main.temp).
-                "tempMin": \(main.tempMin),
-                "tempMax": \(main.tempMax),
-                "humidity": \(main.humidity),
-                "feelsLike": \(main.feelsLike)
-            },
-                "wweather": [
+    ) -> Forecast {
+        let jsonString = """
                     {
-                    "main": "\(weather[0].main)",
-                    "description": "\(weather[0].description)",
-                    "id": "\(weather[0].id)"
+                    "dt" : \(datetime),
+                    "dt_txt": "\(date)",
+                    "main": {
+                        "temp": \(main.temp),
+                        "tempMin": \(main.tempMin),
+                        "tempMax": \(main.tempMax),
+                        "humidity": \(main.humidity),
+                        "feelsLike": \(main.feelsLike)
+                    },
+                    "weather": [
+                        {
+                        "main": "\(weather[0].main)",
+                        "description": "\(weather[0].description)",
+                        "id": \(weather[0].id)
+                        }
+                    ]
                     }
-                ]
-            }
-        """.data(using: .utf8)!
-        
-        return Forecast(dt: dt, date: date, main: main, weather: weather)
+                """
+
+        _ = Data(jsonString.utf8)
+
+        return Forecast(datetime: datetime, date: date, main: main, weather: weather)
     }
-        
 }
 
 extension Coordinates {
@@ -57,7 +58,7 @@ extension Coordinates {
         return Coordinates(lon: lon, lat: lat)
     }
 }
-    
+
 extension City {
     static func mock(
         name: String = "Moscow",
@@ -73,7 +74,6 @@ extension City {
         )
     }
 }
-
 
 extension Main {
     static func mock(
@@ -92,7 +92,6 @@ extension Main {
         )
     }
 }
-
 
 extension Weather {
     static func mock(

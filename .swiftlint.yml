@@ -1,0 +1,29 @@
+# Отключаем строгие правила форматирования
+disabled_rules:
+  - trailing_whitespace
+  - trailing_newline
+  - vertical_whitespace
+  - leading_whitespace
+  - opening_brace
+
+# Проверяем только папку с кодом
+included:
+  - n_Weather
+
+# Исключаем тесты и другие файлы
+excluded:
+  - n_WeatherTests
+  - n_WeatherUITests
+  - Pods
+  - Carthage
+  - .build
+  - .git
+
+# Настройки для правил
+line_length:
+  warning: 150
+  error: 200
+
+identifier_name:
+  min_length: 2
+  max_length: 40

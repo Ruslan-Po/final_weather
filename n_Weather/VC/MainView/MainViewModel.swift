@@ -1,4 +1,3 @@
-
 struct MainViewModel {
     let cityName: String
     let currentTemp: String

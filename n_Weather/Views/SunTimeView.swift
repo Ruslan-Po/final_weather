@@ -7,20 +7,20 @@ class SunTimeView: UIView {
         imageView.image = UIImage(named: imageName)
         setupLocalUI()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     private let imageView: UIImageView = {
-        let iv = UIImageView()
-        iv.contentMode = .scaleAspectFit
-        iv.widthAnchor.constraint(equalTo: iv.heightAnchor).isActive = true
-        iv.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        iv.translatesAutoresizingMaskIntoConstraints = false
-        return iv
+        let imageview = UIImageView()
+        imageview.contentMode = .scaleAspectFit
+        imageview.widthAnchor.constraint(equalTo: imageview.heightAnchor).isActive = true
+        imageview.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        imageview.translatesAutoresizingMaskIntoConstraints = false
+        return imageview
     }()
-    
+
      let timeLabel: UILabel = {
         let label = UILabel()
         label.text = "--:--"
@@ -28,7 +28,7 @@ class SunTimeView: UIView {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    
+
     let stackView: UIStackView = {
        let stackView = UIStackView()
         stackView.axis = .horizontal
@@ -41,10 +41,10 @@ class SunTimeView: UIView {
     func setupLocalUI() {
         stackView.addArrangedSubview(imageView)
         stackView.addArrangedSubview(timeLabel)
-        
+
         addSubview(stackView)
         let padding = CGFloat(10)
-        
+
         NSLayoutConstraint.activate([
             stackView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
             stackView.topAnchor.constraint(equalTo: self.topAnchor, constant: padding),

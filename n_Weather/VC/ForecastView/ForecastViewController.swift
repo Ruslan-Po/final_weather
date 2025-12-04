@@ -9,21 +9,20 @@ class ForecastViewController: UIViewController {
     var presenter: ForecastViewPresenterProtocol!
     var router: RouterProtocol?
     var tableViewTitle: String?
-    
-    
+
     lazy var forecastTableView: ForecastTableView = {
         let view = ForecastTableView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-    
+
     override func viewDidLoad() {
         view.addSubview(forecastTableView)
         super.viewDidLoad()
         view.backgroundColor = .systemGray6
         tableViewTitle = presenter.getSavedCityName() ?? "Forecast"
         presenter?.fetchUsingSavedLocation()
-        
+
         NSLayoutConstraint.activate([
             forecastTableView.topAnchor.constraint(equalTo: view.topAnchor),
             forecastTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -38,9 +37,9 @@ extension ForecastViewController: ForecastViewControllerProtocol {
         forecastTableView.displayTable(forecasts: forecast)
         forecastTableView.tableTitle = tableViewTitle
     }
-    
+
     func displayError(_ error: any Error) {
         print(error)
     }
-    
+
 }

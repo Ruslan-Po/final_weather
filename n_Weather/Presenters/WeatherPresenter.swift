@@ -17,15 +17,14 @@ protocol ForecastViewPresenterProtocol: WeatherViewPresenterProtocol {
     func getSavedCityName() -> String?
 }
 
-
 final class MainViewPresenter: MainViewPresenterProtocol {
-  
+
     weak var view: MainViewControllerProtocol?
     private let client: WeatherClientProtocol
     var locationService: LocationServiceProtocol?
     private let locationStorage: LocationStorageProtocol
     private let greetingHelper = Greetings()
-    
+
     init(view: MainViewControllerProtocol,
          locationService: LocationServiceProtocol,
          client: WeatherClientProtocol,
@@ -35,7 +34,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
         self.locationService = locationService
         self.locationStorage = locationStorage
     }
-    
+
      func createViewModel(from weather: WeatherModel) -> MainViewModel {
         guard let daydata = weather.list.first else {
             return createEmptyViewModel()
@@ -48,7 +47,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
         let greeting = greetingHelper.setGreetingByTime
         let time = DateTimeHelper.formatTime(from: Date()).uppercased()
         let date = DateTimeHelper.formatDate(from: Date()).uppercased()
-        
+
         return MainViewModel(cityName: cityName,
                              currentTemp: currentTemp,
                              weatherImage: weatherImage,
@@ -58,7 +57,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
                              currentTime: time,
                              currentDate: date)
     }
-    
+
      func createEmptyViewModel() -> MainViewModel {
         return MainViewModel(
             cityName: "",
@@ -71,13 +70,12 @@ final class MainViewPresenter: MainViewPresenterProtocol {
             currentDate: ""
         )
     }
-    
+
     private func saveLastLocation(lon: Double, lat: Double, cityName: String) {
         let value = LastLocation(lon: lon, lat: lat, cityName: cityName, updatedAt: Date())
         locationStorage.save(value)
     }
-    
-    
+
     func start() {
         if let saved = locationStorage.get() {
             fetchWeatherByCoordinates(lon: saved.lon, lat: saved.lat)
@@ -85,7 +83,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
             fetchWeatherForCurrentLocation()
         }
     }
-    
+
     func fetchWeatherForCurrentLocation() {
         locationService?.getCurrentLocation { [weak self] result in
             guard let self else { return }
@@ -103,7 +101,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
             }
         }
     }
-    
+
     func searchWeather(for cityName: String) {
         locationService?.getCoordinates(for: cityName) { [weak self] result in
             guard let self else { return }
@@ -116,7 +114,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
             }
         }
     }
-    
+
     func fetchWeatherByCoordinates(lon: Double, lat: Double) {
         client.fetch(lon: lon, lat: lat) { [weak self] result in
             guard let self else { return }
@@ -124,8 +122,8 @@ final class MainViewPresenter: MainViewPresenterProtocol {
                 switch result {
                 case .success(let weather):
                     self.saveLastLocation(lon: lon, lat: lat, cityName: weather.city.name)
-                    let vm = self.createViewModel(from: weather)
-                    self.view?.displayWeather(data: vm)
+                    let viewmodel = self.createViewModel(from: weather)
+                    self.view?.displayWeather(data: viewmodel)
                 case .failure(let error):
                     self.view?.displayError(error: error)
                 }
@@ -134,12 +132,11 @@ final class MainViewPresenter: MainViewPresenterProtocol {
     }
 }
 
-
 final class ForecastViewPresenter: ForecastViewPresenterProtocol {
     weak var view: ForecastViewControllerProtocol?
     private let client: WeatherClientProtocol
     private let locationStorage: LocationStorageProtocol
-    
+
     init(view: ForecastViewControllerProtocol,
          client: WeatherClientProtocol,
          locationStorage: LocationStorageProtocol) {
@@ -147,7 +144,7 @@ final class ForecastViewPresenter: ForecastViewPresenterProtocol {
         self.client = client
         self.locationStorage = locationStorage
     }
-    
+
     func fetchUsingSavedLocation() {
         guard let saved = locationStorage.get() else {
             view?.displayError(NSError(domain: "NoSavedLocation", code: 0))
@@ -155,19 +152,19 @@ final class ForecastViewPresenter: ForecastViewPresenterProtocol {
         }
         fetchWeatherByCoordinates(lon: saved.lon, lat: saved.lat)
     }
-    
+
     func getSavedCityName() -> String? {
         return locationStorage.get()?.cityName
     }
-    
+
     func filter(weatherModel: WeatherModel) -> [Forecast] {
         var addedDays: Set<Date> = []
         var filteredList: [Forecast] = []
         let calendar = Calendar.current
         let todayStart = calendar.startOfDay(for: Date())
-        
+
         for item in weatherModel.list.dropFirst() {
-            let date = Date(timeIntervalSince1970: TimeInterval(item.dt))
+            let date = Date(timeIntervalSince1970: TimeInterval(item.datetime))
             let dayStart = calendar.startOfDay(for: date)
             if dayStart != todayStart && addedDays.insert(dayStart).inserted {
                 filteredList.append(item)
@@ -175,7 +172,7 @@ final class ForecastViewPresenter: ForecastViewPresenterProtocol {
         }
         return filteredList
     }
-    
+
     func fetchWeatherByCoordinates(lon: Double, lat: Double) {
         client.fetch(lon: lon, lat: lat) { [weak self] result in
             DispatchQueue.main.async {

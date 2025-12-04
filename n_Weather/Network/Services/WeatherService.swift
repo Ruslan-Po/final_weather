@@ -7,7 +7,11 @@ enum WeatherErrors: Error, Sendable {
     case decodingFailed
 }
 
-class WeatherService {
+protocol WeatherServiceProtocol {
+    func fetchWeatherData(longitude: Double,latitude: Double, completion: @escaping (Result<WeatherModel, Error>) -> Void)
+}
+
+class WeatherService: WeatherServiceProtocol{
     
      let apiKey: String
      private let session: URLSessionProtocol

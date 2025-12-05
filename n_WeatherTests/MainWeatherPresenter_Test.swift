@@ -43,7 +43,7 @@ final class MainViewPresenterTests: XCTestCase {
         // ARRANGE
         let weather = Weather.mock(main: "Clear", description: "clear sky", id: 800)
         let main = Main.mock(temp: 25.5, tempMin: 20.0, tempMax: 28.0, humidity: 60, feelsLike: 24.0)
-        let forecast = Forecast.mock(dt: 1704067200, main: main, weather: [weather])
+        let forecast = Forecast.mock(datetime: 1704067200, main: main, weather: [weather])
         let city = City.mock(name: "Moscow", sunrise: 1704081600, sunset: 1704117600)
         let weatherModel = WeatherModel.mock(list: [forecast], city: city)
 

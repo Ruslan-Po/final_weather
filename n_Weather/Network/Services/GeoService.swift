@@ -28,7 +28,11 @@ class LocationService: NSObject, LocationServiceProtocol {
     private let locationManager = CLLocationManager()
     private let geocoder = CLGeocoder()
     private var locationCompletion: ((Result<CLLocationCoordinate2D, Error>) -> Void)?
-    override init() {
+    private let syncQueue = DispatchQueue(label: "syncQueue")
+    private let completionQueue: DispatchQueue
+    
+    init(completionQueue: DispatchQueue = .main) {
+        self.completionQueue = completionQueue
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -39,51 +43,74 @@ class LocationService: NSObject, LocationServiceProtocol {
     }
 
     func getCurrentLocation(completion: @escaping (Result<CLLocationCoordinate2D, Error>) -> Void) {
-        locationCompletion = completion
+        syncQueue.async { [weak self] in
+            guard let self = self else { return }
 
-        switch locationManager.authorizationStatus {
-        case .authorizedWhenInUse, .authorizedAlways:
-            locationManager.requestLocation()
-        case .notDetermined:
-            locationManager.requestWhenInUseAuthorization()
-        case .denied, .restricted:
-            completion(.failure(LocationError.permissionDenied))
-        @unknown default:
-            completion(.failure(LocationError.unknown))
+            self.locationCompletion = completion
+
+            DispatchQueue.main.async {
+                switch self.locationManager.authorizationStatus {
+                case .authorizedWhenInUse, .authorizedAlways:
+                    self.locationManager.requestLocation()
+                case .notDetermined:
+                    self.locationManager.requestWhenInUseAuthorization()
+                case .denied, .restricted:
+                    self.complete(with: .failure(LocationError.permissionDenied))
+                @unknown default:
+                    self.complete(with: .failure(LocationError.unknown))
+                }
+            }
         }
     }
 
     func getCoordinates(for cityName: String, completion: @escaping (Result<CLLocationCoordinate2D, Error>) -> Void) {
-        geocoder.geocodeAddressString(cityName) { placemarks, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
+        geocoder.geocodeAddressString(cityName) { [weak self] placemarks, error in
+            guard let self = self else { return }
 
-            guard let coordinate = placemarks?.first?.location?.coordinate else {
-                completion(.failure(LocationError.cityNotFound))
-                return
+            self.completionQueue.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let coordinate = placemarks?.first?.location?.coordinate else {
+                    completion(.failure(LocationError.cityNotFound))
+                    return
+                }
+                completion(.success(coordinate))
             }
-
-            completion(.success(coordinate))
         }
     }
 
     func getCityName(for coordinates: CLLocationCoordinate2D, completion: @escaping (Result<String, Error>) -> Void) {
         let location = CLLocation(latitude: coordinates.latitude, longitude: coordinates.longitude)
 
-        geocoder.reverseGeocodeLocation(location) { placemarks, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
+        geocoder.reverseGeocodeLocation(location) { [weak self] placemarks, error in
+            guard let self = self else { return }
 
-            guard let cityName = placemarks?.first?.locality else {
-                completion(.failure(LocationError.cityNotFound))
-                return
+            self.completionQueue.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let cityName = placemarks?.first?.locality else {
+                    completion(.failure(LocationError.cityNotFound))
+                    return
+                }
+                completion(.success(cityName))
             }
+        }
+    }
 
-            completion(.success(cityName))
+    private func complete(with result: Result<CLLocationCoordinate2D, Error>) {
+        syncQueue.async { [weak self] in
+            guard let self = self,
+                  let completion = self.locationCompletion else { return }
+            
+            self.locationCompletion = nil
+            
+            self.completionQueue.async {
+                completion(result)
+            }
         }
     }
 }
@@ -91,13 +118,11 @@ class LocationService: NSObject, LocationServiceProtocol {
 extension LocationService: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.first else { return }
-        locationCompletion?(.success(location.coordinate))
-        locationCompletion = nil
+        complete(with: .success(location.coordinate))
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        locationCompletion?(.failure(error))
-        locationCompletion = nil
+        complete(with: .failure(error))
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {

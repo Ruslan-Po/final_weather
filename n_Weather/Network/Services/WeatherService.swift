@@ -14,17 +14,21 @@ protocol WeatherServiceProtocol {
 }
 
 class WeatherService: WeatherServiceProtocol {
-     let apiKey: String
-     private let session: URLSessionProtocol
-     private let decoder: JSONDecoder
+    let apiKey: String
+    private let session: URLSessionProtocol
+    private let decoder: JSONDecoder
+    private let completioQueue: DispatchQueue
+    
      init(
          apiKey: String = "7cdd70a88a12f2058c790ed2952ac54a",
          session: URLSessionProtocol = URLSession.shared,
-         decoder: JSONDecoder = JSONDecoder()
+         decoder: JSONDecoder = JSONDecoder(),
+         completioQueue: DispatchQueue = .main
      ) {
          self.apiKey = apiKey
          self.session = session
          self.decoder = decoder
+         self.completioQueue = completioQueue
      }
     func createWeatherURL(lon: Double, lat: Double, key: String) -> URL? {
         var components = URLComponents()
@@ -44,19 +48,27 @@ class WeatherService: WeatherServiceProtocol {
                           completion: @escaping (Result<WeatherModel, Error>) -> Void) {
         Task {
             guard let url = createWeatherURL(lon: longitude, lat: latitude, key: apiKey) else {
-                completion(.failure(WeatherErrors.URLconstructionFailed))
+                completioQueue.async{
+                    completion(.failure(WeatherErrors.URLconstructionFailed))
+                }
                 return
             }
             do {
                 let (data, _) = try await session.data(from: url)
                 do {
                     let weather = try decoder.decode(WeatherModel.self, from: data)
-                    completion(.success(weather))
+                    completioQueue.async {
+                        completion(.success(weather))
+                    }
                 } catch {
-                    completion(.failure(WeatherErrors.decodingFailed))
+                    completioQueue.async {
+                        completion(.failure(WeatherErrors.decodingFailed))
+                    }
                 }
             } catch {
-                completion(.failure(error))
+                completioQueue.async {
+                    completion(.failure(error))
+                }
             }
         }
     }

@@ -42,10 +42,10 @@ final class ForecastViewPresenterTests: XCTestCase {
         let dayAfterTimestamp = Int(dayAfter.timeIntervalSince1970)
 
         let forecasts = [
-            Forecast.mock(dt: todayTimestamp),           // today must be skipped
-            Forecast.mock(dt: tomorrowTimestamp),        // tommorow must stay
-            Forecast.mock(dt: tomorrowEveningTimestamp), // tommorow evening (duble or skip)
-            Forecast.mock(dt: dayAfterTimestamp)         // day after tommorow
+            Forecast.mock(datetime: todayTimestamp),           // today must be skipped
+            Forecast.mock(datetime: tomorrowTimestamp),        // tommorow must stay
+            Forecast.mock(datetime: tomorrowEveningTimestamp), // tommorow evening (duble or skip)
+            Forecast.mock(datetime: dayAfterTimestamp)         // day after tommorow
         ]
 
         let weatherModel = WeatherModel.mock(list: forecasts)
@@ -55,8 +55,8 @@ final class ForecastViewPresenterTests: XCTestCase {
 
         // ASSERT
         XCTAssertEqual(filtered.count, 2, "Should have 2 forecasts (tomorrow and day after)")
-        XCTAssertEqual(filtered[0].dt, tomorrowTimestamp, "First should be tomorrow")
-        XCTAssertEqual(filtered[1].dt, dayAfterTimestamp, "Second should be day after tomorrow")
+        XCTAssertEqual(filtered[0].datetime, tomorrowTimestamp, "First should be tomorrow")
+        XCTAssertEqual(filtered[1].datetime, dayAfterTimestamp, "Second should be day after tomorrow")
     }
 
     func test_getSavedCityName_withSavedLocation_returnsCityName() {

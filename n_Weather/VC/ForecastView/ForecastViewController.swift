@@ -39,7 +39,6 @@ extension ForecastViewController: ForecastViewControllerProtocol {
     }
 
     func displayError(_ error: any Error) {
-        print(error)
+       showError(error)
     }
-
 }

@@ -29,7 +29,6 @@ final class ForecastViewPresenterTests: XCTestCase {
     }
 
     func test_filter_removesTodayAndDuplicateDays() {
-        // ARRANGE
         let today = Date()
         let calendar = Calendar.current
 
@@ -50,17 +49,14 @@ final class ForecastViewPresenterTests: XCTestCase {
 
         let weatherModel = WeatherModel.mock(list: forecasts)
 
-        // ACT
         let filtered = sut.filter(weatherModel: weatherModel)
 
-        // ASSERT
         XCTAssertEqual(filtered.count, 2, "Should have 2 forecasts (tomorrow and day after)")
         XCTAssertEqual(filtered[0].datetime, tomorrowTimestamp, "First should be tomorrow")
         XCTAssertEqual(filtered[1].datetime, dayAfterTimestamp, "Second should be day after tomorrow")
     }
 
     func test_getSavedCityName_withSavedLocation_returnsCityName() {
-        // ARRANGE
         let savedLocation = LastLocation(
             lon: 37.6173,
             lat: 55.7558,
@@ -69,21 +65,15 @@ final class ForecastViewPresenterTests: XCTestCase {
         )
         mockLocationStorage.setSavedLocation(savedLocation)
 
-        // ACT
         let cityName = sut.getSavedCityName()
 
-        // ASSERT
         XCTAssertEqual(cityName, "Moscow")
         XCTAssertTrue(mockLocationStorage.getWasCalled)
     }
 
     func test_fetchUsingSavedLocation_withoutSavedLocation_displaysError() {
-        // ARRANGE
-
-        // ACT
         sut.fetchUsingSavedLocation()
 
-        // ASSERT
         XCTAssertTrue(mockLocationStorage.getWasCalled)
         XCTAssertTrue(mockView.displayErrorWasCalled)
         XCTAssertFalse(mockClient.fetchWasCalled, "Should not fetch without saved location")

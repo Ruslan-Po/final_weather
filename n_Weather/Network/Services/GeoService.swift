@@ -69,9 +69,21 @@ class LocationService: NSObject, LocationServiceProtocol {
 
             self.completionQueue.async {
                 if let error = error {
-                    completion(.failure(error))
+                    if let clError = error as? CLError {
+                        switch clError.code {
+                        case .geocodeFoundNoResult, .geocodeFoundPartialResult:
+                            completion(.failure(LocationError.cityNotFound))
+                        case .network:
+                            completion(.failure(clError))
+                        default:
+                            completion(.failure(clError))
+                        }
+                    } else {
+                        completion(.failure(error))
+                    }
                     return
                 }
+                
                 guard let coordinate = placemarks?.first?.location?.coordinate else {
                     completion(.failure(LocationError.cityNotFound))
                     return

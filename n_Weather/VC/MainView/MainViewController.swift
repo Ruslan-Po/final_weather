@@ -9,8 +9,6 @@ class MainViewController: UIViewController {
     var presenter: MainViewPresenterProtocol!
     var router: RouterProtocol?
 
-// MARK: - UI_Elements
-
     lazy var cityLabel: UILabel = {
         let label = UILabel()
         label.text = ""
@@ -196,7 +194,7 @@ extension MainViewController: MainViewControllerProtocol {
     }
 
     func displayError(error: Error) {
-        print("\(error)")
+       showError(error)
     }
 }
 

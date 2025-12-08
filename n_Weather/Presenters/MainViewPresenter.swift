@@ -95,7 +95,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
                 self.saveLastLocation(lon: coordinates.longitude, lat: coordinates.latitude, cityName: cityName)
                 self.fetchWeatherByCoordinates(lon: coordinates.longitude, lat: coordinates.latitude)
             case .failure(let error):
-                DispatchQueue.main.async {self.view?.displayError(error: error) }
+                DispatchQueue.main.async {self.view?.displayError(error: error)}
             }
         }
     }

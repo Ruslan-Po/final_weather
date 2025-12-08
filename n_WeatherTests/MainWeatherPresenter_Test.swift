@@ -40,17 +40,14 @@ final class MainViewPresenterTests: XCTestCase {
     }
 
     func test_createViewModel_withValidWeather_returnsCorrectViewModel() {
-        // ARRANGE
         let weather = Weather.mock(main: "Clear", description: "clear sky", id: 800)
         let main = Main.mock(temp: 25.5, tempMin: 20.0, tempMax: 28.0, humidity: 60, feelsLike: 24.0)
         let forecast = Forecast.mock(datetime: 1704067200, main: main, weather: [weather])
         let city = City.mock(name: "Moscow", sunrise: 1704081600, sunset: 1704117600)
         let weatherModel = WeatherModel.mock(list: [forecast], city: city)
 
-        // ACT
         let viewModel = sut.createViewModel(from: weatherModel)
 
-        // ASSERT
         XCTAssertEqual(viewModel.cityName, "Moscow", "City name should match")
         XCTAssertEqual(viewModel.currentTemp, "25.5°C", "Temperature should be formatted correctly")
         XCTAssertEqual(viewModel.weatherImage, "clearsky", "Weather code 800 should map to clearsky")
@@ -62,36 +59,28 @@ final class MainViewPresenterTests: XCTestCase {
     }
 
     func test_createViewModel_withRainyWeather_returnsRainImage() {
-        // ARRANGE
         let weather = Weather.mock(main: "Rain", id: 500)
         let forecast = Forecast.mock(weather: [weather])
         let weatherModel = WeatherModel.mock(list: [forecast])
 
-        // ACT
         let viewModel = sut.createViewModel(from: weatherModel)
 
-        // ASSERT
         XCTAssertEqual(viewModel.weatherImage, "rain", "Weather code 500 should map to rain")
     }
 
     func test_createViewModel_withEmptyList_returnsEmptyViewModel() {
-        // ARRANGE
         let weatherModel = WeatherModel.mock(list: [])
 
-        // ACT
         let viewModel = sut.createViewModel(from: weatherModel)
 
-        // ASSERT
         XCTAssertEqual(viewModel.cityName, "")
         XCTAssertEqual(viewModel.currentTemp, "")
         XCTAssertEqual(viewModel.weatherImage, "")
     }
 
     func test_createEmptyViewModel_returnsViewModelWithEmptyFields() {
-        // ACT
         let viewModel = sut.createEmptyViewModel()
 
-        // ASSERT
         XCTAssertEqual(viewModel.cityName, "")
         XCTAssertEqual(viewModel.currentTemp, "")
         XCTAssertEqual(viewModel.weatherImage, "")
@@ -103,7 +92,6 @@ final class MainViewPresenterTests: XCTestCase {
     }
 
     func test_fetchWeatherByCoordinates_onSuccess_callsViewDisplayWeather() {
-        // ARRANGE
         let lon = 37.6173
         let lat = 55.7558
         let mockWeather = WeatherModel.mock()
@@ -111,14 +99,12 @@ final class MainViewPresenterTests: XCTestCase {
 
         let expectation = expectation(description: "Weather displayed")
 
-        // ACT
         sut.fetchWeatherByCoordinates(lon: lon, lat: lat)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             expectation.fulfill()
         }
 
-        // ASSERT
         waitForExpectations(timeout: 1.0)
 
         XCTAssertTrue(mockClient.fetchWasCalled, "Client fetch should be called")
@@ -130,7 +116,6 @@ final class MainViewPresenterTests: XCTestCase {
     }
 
     func test_fetchWeatherByCoordinates_onSuccess_savesLocation() {
-        // ARRANGE
         let lon = 37.6173
         let lat = 55.7558
         let cityName = "Moscow"
@@ -140,14 +125,12 @@ final class MainViewPresenterTests: XCTestCase {
 
         let expectation = expectation(description: "Location saved")
 
-        // ACT
         sut.fetchWeatherByCoordinates(lon: lon, lat: lat)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             expectation.fulfill()
         }
 
-        // ASSERT
         waitForExpectations(timeout: 1.0)
 
         XCTAssertTrue(mockLocationStorage.saveWasCalled, "Should save location")
@@ -157,20 +140,17 @@ final class MainViewPresenterTests: XCTestCase {
     }
 
     func test_fetchWeatherByCoordinates_onError_callsViewDisplayError() {
-        // ARRANGE
         mockClient.shouldReturnError = true
         mockClient.errorToReturn = NSError.testError(description: "Network error")
 
         let expectation = expectation(description: "Error displayed")
 
-        // ACT
         sut.fetchWeatherByCoordinates(lon: 0, lat: 0)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             expectation.fulfill()
         }
 
-        // ASSERT
         waitForExpectations(timeout: 1.0)
 
         XCTAssertTrue(mockClient.fetchWasCalled, "Client should be called even on error")
@@ -180,7 +160,6 @@ final class MainViewPresenterTests: XCTestCase {
     }
 
     func test_fetchWeatherForCurrentLocation_onSuccess_fetchesAndDisplaysWeather() {
-        // ARRANGE
         mockLocationService.setMockCoordinates(latitude: 55.7558, longitude: 37.6173)
 
         let mockWeather = WeatherModel.mock()
@@ -188,14 +167,12 @@ final class MainViewPresenterTests: XCTestCase {
 
         let expectation = expectation(description: "Current location weather fetched")
 
-        // ACT
         sut.fetchWeatherForCurrentLocation()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             expectation.fulfill()
         }
 
-        // ASSERT
         waitForExpectations(timeout: 1.0)
 
         XCTAssertTrue(mockLocationService.getCurrentLocationWasCalled, "Should request current location")
@@ -207,19 +184,16 @@ final class MainViewPresenterTests: XCTestCase {
     }
 
     func test_fetchWeatherForCurrentLocation_onLocationError_displaysError() {
-        // ARRANGE
         mockLocationService.setMockError(.permissionDenied)
 
         let expectation = expectation(description: "Location error handled")
 
-        // ACT
         sut.fetchWeatherForCurrentLocation()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             expectation.fulfill()
         }
 
-        // ASSERT
         waitForExpectations(timeout: 1.0)
 
         XCTAssertTrue(mockLocationService.getCurrentLocationWasCalled)
@@ -228,7 +202,6 @@ final class MainViewPresenterTests: XCTestCase {
     }
 
     func test_searchWeather_withValidCity_fetchesAndDisplaysWeather() {
-        // ARRANGE
         let cityName = "London"
         mockLocationService.setMockCoordinates(latitude: 51.5074, longitude: -0.1278)
 
@@ -237,14 +210,12 @@ final class MainViewPresenterTests: XCTestCase {
 
         let expectation = expectation(description: "City weather fetched")
 
-        // ACT
         sut.searchWeather(for: cityName)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             expectation.fulfill()
         }
 
-        // ASSERT
         waitForExpectations(timeout: 1.0)
 
         XCTAssertTrue(mockLocationService.getCoordinatesWasCalled, "Should get coordinates for city")
@@ -256,20 +227,17 @@ final class MainViewPresenterTests: XCTestCase {
     }
 
     func test_searchWeather_withInvalidCity_displaysError() {
-        // ARRANGE
         let cityName = "NonExistentCity"
         mockLocationService.setMockError(.cityNotFound)
 
         let expectation = expectation(description: "Search error handled")
 
-        // ACT
         sut.searchWeather(for: cityName)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             expectation.fulfill()
         }
 
-        // ASSERT
         waitForExpectations(timeout: 1.0)
         XCTAssertTrue(mockLocationService.getCoordinatesWasCalled)
         XCTAssertTrue(mockView.displayErrorWasCalled, "Should display search error")
@@ -277,7 +245,7 @@ final class MainViewPresenterTests: XCTestCase {
     }
 
     func test_start_withSavedLocation_fetchesWeatherForSavedLocation() {
-        // ARRANGE
+
         let savedLocation = LastLocation(
             lon: 37.6173,
             lat: 55.7558,
@@ -291,14 +259,12 @@ final class MainViewPresenterTests: XCTestCase {
 
         let expectation = expectation(description: "Saved location weather fetched")
 
-        // ACT
         sut.start()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             expectation.fulfill()
         }
 
-        // ASSERT
         waitForExpectations(timeout: 1.0)
 
         XCTAssertTrue(mockLocationStorage.getWasCalled, "Should check for saved location")
@@ -310,7 +276,6 @@ final class MainViewPresenterTests: XCTestCase {
     }
 
     func test_start_withoutSavedLocation_fetchesCurrentLocation() {
-        // ARRANGE
 
         mockLocationService.setMockCoordinates(latitude: 55.7558, longitude: 37.6173)
 
@@ -319,14 +284,12 @@ final class MainViewPresenterTests: XCTestCase {
 
         let expectation = expectation(description: "Current location fetched")
 
-        // ACT
         sut.start()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             expectation.fulfill()
         }
 
-        // ASSERT
         waitForExpectations(timeout: 1.0)
 
         XCTAssertTrue(mockLocationStorage.getWasCalled, "Should check for saved location")
@@ -336,14 +299,12 @@ final class MainViewPresenterTests: XCTestCase {
     }
 
     func test_fetchWeatherByCoordinates_multipleCalls_eachCallSavesLocation() {
-        // ARRANGE
         let mockWeather = WeatherModel.mock()
         mockClient.weatherToReturn = mockWeather
 
         let expectation = expectation(description: "Multiple fetches")
         expectation.expectedFulfillmentCount = 2
 
-        // ACT
         sut.fetchWeatherByCoordinates(lon: 10, lat: 20)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             expectation.fulfill()
@@ -354,7 +315,6 @@ final class MainViewPresenterTests: XCTestCase {
             expectation.fulfill()
         }
 
-        // ASSERT
         waitForExpectations(timeout: 1.0)
 
         XCTAssertEqual(mockClient.fetchCallCount, 2, "Should call fetch twice")

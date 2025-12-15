@@ -55,10 +55,11 @@ final class MainViewPresenter: MainViewPresenterProtocol {
             currentDate: ""
         )
     }
-
+    
     private func saveLastLocation(lon: Double, lat: Double, cityName: String) {
         let value = LastLocation(lon: lon, lat: lat, cityName: cityName, updatedAt: Date())
         locationStorage.save(value)
+        NotificationCenter.default.post(name: .locationDidChange, object: nil)
     }
 
     func start() {

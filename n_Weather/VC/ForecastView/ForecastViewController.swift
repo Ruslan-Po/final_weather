@@ -7,7 +7,6 @@ protocol ForecastViewControllerProtocol: AnyObject {
 
 class ForecastViewController: UIViewController {
     var presenter: ForecastViewPresenterProtocol!
-    var router: RouterProtocol?
     var tableViewTitle: String?
 
     lazy var forecastTableView: ForecastTableView = {
@@ -15,11 +14,24 @@ class ForecastViewController: UIViewController {
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
+    
+    private func setupNotifications() {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(updateForecast),
+                                               name: .locationDidChange,
+                                               object: nil)
+    }
+    
+    @objc private func updateForecast(_: Notification) {
+        presenter?.fetchUsingSavedLocation()
+        tableViewTitle = presenter.getSavedCityName() ?? "Forecast"
+    }
 
     override func viewDidLoad() {
         view.addSubview(forecastTableView)
         super.viewDidLoad()
         view.backgroundColor = .systemGray6
+        setupNotifications()
         tableViewTitle = presenter.getSavedCityName() ?? "Forecast"
         presenter?.fetchUsingSavedLocation()
 

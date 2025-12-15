@@ -21,7 +21,7 @@ class SunTimeView: UIView {
         return imageview
     }()
 
-     let timeLabel: UILabel = {
+    private let timeLabel: UILabel = {
         let label = UILabel()
         label.text = "--:--"
         label.font = .systemFont(ofSize: 16, weight: .medium)
@@ -33,22 +33,25 @@ class SunTimeView: UIView {
        let stackView = UIStackView()
         stackView.axis = .horizontal
         stackView.alignment = .center
-        stackView.spacing = 5
+        stackView.spacing = Layout.Spacing.minimal
         stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
+    
+    public func configure(with time: String) {
+        timeLabel.text = time
+    }
 
     func setupLocalUI() {
         stackView.addArrangedSubview(imageView)
         stackView.addArrangedSubview(timeLabel)
 
         addSubview(stackView)
-        let padding = CGFloat(10)
 
         NSLayoutConstraint.activate([
             stackView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-            stackView.topAnchor.constraint(equalTo: self.topAnchor, constant: padding),
-            stackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -padding)
+            stackView.topAnchor.constraint(equalTo: self.topAnchor, constant: Layout.smallPadding),
+            stackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -Layout.smallPadding)
         ])
     }
 }

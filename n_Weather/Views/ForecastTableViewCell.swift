@@ -12,8 +12,8 @@ class ForecastTableViewCell: UITableViewCell {
 
     lazy var bgView: UIView = {
         let view = UIView()
-        view.backgroundColor = .systemGray6
-        view.layer.cornerRadius = 8
+        view.backgroundColor = AppColors.primary
+        view.layer.cornerRadius = Layout.cornerRadius
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -21,19 +21,22 @@ class ForecastTableViewCell: UITableViewCell {
     lazy var temperatureLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 40, weight: .bold)
+        label.setContentHuggingPriority(.required, for: .vertical)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
 
     lazy var dateLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 20)
+        label.font = UIFont.systemFont(ofSize: 30)
+        label.numberOfLines = 1
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
 
     lazy var descriptionLabel: UILabel = {
         let label = UILabel()
+        label.setContentHuggingPriority(.required, for: .vertical)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -51,20 +54,20 @@ class ForecastTableViewCell: UITableViewCell {
         bgView.addSubview(descriptionLabel)
 
         NSLayoutConstraint.activate([
-            bgView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5),
-            bgView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -5),
-            bgView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
-            bgView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
+            bgView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: Layout.extraSmallPadding),
+            bgView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Layout.extraSmallPadding),
+            bgView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.smallPadding),
+            bgView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.smallPadding),
 
-            dateLabel.topAnchor.constraint(equalTo: bgView.topAnchor, constant: 10),
-            dateLabel.leadingAnchor.constraint(equalTo: bgView.leadingAnchor, constant: 10),
+            dateLabel.topAnchor.constraint(equalTo: bgView.topAnchor, constant: Layout.smallPadding),
+            dateLabel.leadingAnchor.constraint(equalTo: bgView.leadingAnchor, constant: Layout.smallPadding),
 
-            descriptionLabel.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: 5),
-            descriptionLabel.leadingAnchor.constraint(equalTo: bgView.leadingAnchor, constant: 10),
-            descriptionLabel.bottomAnchor.constraint(equalTo: bgView.bottomAnchor, constant: -10),
+            descriptionLabel.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: Layout.extraSmallPadding),
+            descriptionLabel.leadingAnchor.constraint(equalTo: bgView.leadingAnchor, constant: Layout.smallPadding),
+            descriptionLabel.bottomAnchor.constraint(equalTo: bgView.bottomAnchor, constant: -Layout.smallPadding),
 
             temperatureLabel.centerYAnchor.constraint(equalTo: bgView.centerYAnchor),
-            temperatureLabel.trailingAnchor.constraint(equalTo: bgView.trailingAnchor, constant: -20)
+            temperatureLabel.trailingAnchor.constraint(equalTo: bgView.trailingAnchor, constant: -Layout.largePadding)
         ])
     }
 

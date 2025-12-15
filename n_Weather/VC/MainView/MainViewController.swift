@@ -7,12 +7,11 @@ protocol MainViewControllerProtocol: AnyObject {
 
 class MainViewController: UIViewController {
     var presenter: MainViewPresenterProtocol!
-    var router: RouterProtocol?
 
     lazy var cityLabel: UILabel = {
         let label = UILabel()
         label.text = ""
-        label.textColor = .systemGray
+        label.textColor = AppColors.secondary
         label.font = UIFont.systemFont(ofSize: 25, weight: .thin)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -21,7 +20,6 @@ class MainViewController: UIViewController {
     lazy var weatherImage: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
-        imageView.tintColor = .red
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
@@ -58,7 +56,7 @@ class MainViewController: UIViewController {
         let stack = UIStackView(arrangedSubviews: [greetingsLabel, timeLabel, dateLabel])
         stack.distribution = .fillEqually
         stack.axis = .vertical
-        stack.spacing = 8
+        stack.spacing = Layout.Spacing.small
         stack.alignment = .center
         stack.translatesAutoresizingMaskIntoConstraints = false
         return stack
@@ -73,17 +71,6 @@ class MainViewController: UIViewController {
         return field
     }()
 
-    lazy var forecastButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.layer.cornerRadius = 8
-        button.backgroundColor = .systemGray2
-        button.setTitle("Forecast".uppercased(), for: .normal)
-        button.tintColor = .white
-        button.isEnabled = true
-        button.addTarget(self, action: #selector(showForecast), for: .touchUpInside)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
 
     lazy var sunsetStackView: SunTimeView = {
         let stackView = SunTimeView(imageName: "sunset")
@@ -101,7 +88,7 @@ class MainViewController: UIViewController {
         let stackView = UIStackView(arrangedSubviews: [sunriseStackView, sunsetStackView])
         stackView.axis = .horizontal
         stackView.distribution = .fillEqually
-        stackView.spacing = 10
+        stackView.spacing = Layout.Spacing.small
         stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
@@ -111,7 +98,7 @@ class MainViewController: UIViewController {
         let pointSize: CGFloat = 25.0
         let symbolConfig = UIImage.SymbolConfiguration(pointSize: pointSize)
         let buttonImage = UIImage(systemName: "location.app.fill", withConfiguration: symbolConfig)
-        button.tintColor = .gray
+        button.tintColor = AppColors.tint
 
         button.setImage(buttonImage, for: .normal)
         button.addTarget(self, action: #selector(getUserLocation), for: .touchUpInside)
@@ -123,12 +110,7 @@ class MainViewController: UIViewController {
          presenter.fetchWeatherForCurrentLocation()
     }
 
-    @objc func showForecast() {
-        router?.showForecastScreen()
-    }
-
     func setupUI() {
-        view.addSubview(forecastButton)
         view.addSubview(weatherImage)
         view.addSubview(temperatureLabel)
         view.addSubview(dateTimeStackView)
@@ -138,42 +120,40 @@ class MainViewController: UIViewController {
         view.addSubview(cityLabel)
 
         NSLayoutConstraint.activate([
-            textField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
-            textField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
-            textField.trailingAnchor.constraint(equalTo: locationButton.leadingAnchor, constant: -10),
+            textField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Layout.smallPadding),
+            textField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.extraLargePadding),
+            textField.trailingAnchor.constraint(equalTo: locationButton.leadingAnchor, constant: -Layout.smallPadding),
 
-            locationButton.leadingAnchor.constraint(equalTo: textField.trailingAnchor, constant: 10),
+            locationButton.leadingAnchor.constraint(equalTo: textField.trailingAnchor, constant: Layout.smallPadding),
             locationButton.centerYAnchor.constraint(equalTo: textField.centerYAnchor),
-            locationButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
+            locationButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.smallPadding),
+            locationButton.widthAnchor.constraint(equalToConstant: Layout.constansWidth),
+            locationButton.heightAnchor.constraint(equalToConstant: Layout.constansHeight),
 
-            cityLabel.topAnchor.constraint(equalTo: locationButton.bottomAnchor, constant: 10),
+            cityLabel.topAnchor.constraint(equalTo: locationButton.bottomAnchor, constant: Layout.smallPadding),
             cityLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
 
-            weatherImage.topAnchor.constraint(equalTo: cityLabel.bottomAnchor, constant: 10),
-            weatherImage.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            weatherImage.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            weatherImage.topAnchor.constraint(equalTo: cityLabel.bottomAnchor, constant: Layout.smallPadding),
+            weatherImage.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.largePadding),
+            weatherImage.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.largePadding),
+            weatherImage.heightAnchor.constraint(equalToConstant: 220),
 
             temperatureLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            temperatureLabel.topAnchor.constraint(equalTo: weatherImage.bottomAnchor, constant: 10),
+            temperatureLabel.topAnchor.constraint(equalTo: weatherImage.bottomAnchor, constant: Layout.smallPadding),
 
-            dateTimeStackView.topAnchor.constraint(equalTo: temperatureLabel.bottomAnchor, constant: 15),
-            dateTimeStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
-            dateTimeStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            dateTimeStackView.topAnchor.constraint(equalTo: temperatureLabel.bottomAnchor, constant: Layout.mediumPadding),
+            dateTimeStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.extraLargePadding),
+            dateTimeStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.extraLargePadding),
 
-            sunStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
-            sunStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
-            sunStackView.topAnchor.constraint(equalTo: dateTimeStackView.bottomAnchor, constant: 10),
-
-            forecastButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -50),
-            forecastButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            forecastButton.heightAnchor.constraint(equalToConstant: 40),
-            forecastButton.widthAnchor.constraint(equalToConstant: 150)
+            sunStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Layout.largePadding),
+            sunStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -Layout.largePadding),
+            sunStackView.topAnchor.constraint(equalTo: dateTimeStackView.bottomAnchor, constant: Layout.smallPadding)
         ])
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemGray6
+        view.backgroundColor = AppColors.primary
 
         presenter.start()
         setupUI()
@@ -183,8 +163,8 @@ class MainViewController: UIViewController {
 extension MainViewController: MainViewControllerProtocol {
 
     func displayWeather(data: MainViewModel) {
-        sunsetStackView.timeLabel.text = data.sunset
-        sunriseStackView.timeLabel.text = data.sunrise
+        sunsetStackView.configure(with: data.sunset)
+        sunriseStackView.configure(with: data.sunrise)
         temperatureLabel.text = data.currentTemp
         weatherImage.image = UIImage(named: data.weatherImage)
         cityLabel.text = data.cityName

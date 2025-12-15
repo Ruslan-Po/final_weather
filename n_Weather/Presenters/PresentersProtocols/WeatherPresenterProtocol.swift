@@ -9,6 +9,7 @@ protocol WeatherViewPresenterProtocol: AnyObject {
 protocol MainViewPresenterProtocol: WeatherViewPresenterProtocol {
     func fetchWeatherForCurrentLocation()
     func searchWeather(for cityName: String)
+    func searchCity(query: String)
     func start()
 }
 

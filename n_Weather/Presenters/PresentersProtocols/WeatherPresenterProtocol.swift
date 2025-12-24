@@ -17,3 +17,9 @@ protocol ForecastViewPresenterProtocol: WeatherViewPresenterProtocol {
     func fetchUsingSavedLocation()
     func getSavedCityName() -> String?
 }
+
+protocol DetailedViewPresetnerProtocol: WeatherViewPresenterProtocol {
+    func fetchUsingSavedLocation()
+    func getSavedCityName() -> String?
+}
+

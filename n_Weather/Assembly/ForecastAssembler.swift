@@ -10,6 +10,9 @@ final class ForecastAssembler {
             locationStorage: container.storage
         )
         view.presenter = presenter
-        return view
+        
+        let navigationController = UINavigationController(rootViewController: view)
+        
+        return navigationController
     }
 }

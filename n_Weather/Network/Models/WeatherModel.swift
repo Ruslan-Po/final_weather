@@ -1,4 +1,3 @@
-// Models.swift
 import Foundation
 
 struct WeatherModel: Decodable, Sendable {
@@ -11,6 +10,7 @@ struct City: Decodable, Sendable {
     let name: String
     let coord: Coordinates
     let sunrise: Int
+    
     let sunset: Int
 }
 

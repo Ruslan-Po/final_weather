@@ -8,9 +8,13 @@ final class MainAssembler {
             view: view,
             locationService: container.locationService,
             client: container.client,
+            citySearchService: container.citySearchService,
             locationStorage: container.storage
         )
         view.presenter = presenter
-        return view
+        
+        let navigationController = UINavigationController(rootViewController: view)
+        
+        return navigationController
     }
 }

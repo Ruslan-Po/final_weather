@@ -9,17 +9,28 @@ final class MainViewPresenter: MainViewPresenterProtocol {
     var locationService: LocationServiceProtocol?
     private let locationStorage: LocationStorageProtocol
     private let greetingHelper = Greetings()
+    private let citySearchService: CitySearchServiceProtocol
 
     init(view: MainViewControllerProtocol,
          locationService: LocationServiceProtocol,
          client: WeatherClientProtocol,
+         citySearchService: CitySearchServiceProtocol,
          locationStorage: LocationStorageProtocol) {
         self.view = view
         self.client = client
         self.locationService = locationService
         self.locationStorage = locationStorage
+        self.citySearchService = citySearchService
+        
+        setupCitySearch()
     }
 
+    private func setupCitySearch() {
+        citySearchService.onResultsUpdated = { [weak self] cities in
+            self?.view?.displayCitySearchResults(cities)
+        }
+    }
+    
      func createViewModel(from weather: WeatherModel) -> MainViewModel {
         guard let daydata = weather.list.first else {
             return createEmptyViewModel()
@@ -60,6 +71,10 @@ final class MainViewPresenter: MainViewPresenterProtocol {
         let value = LastLocation(lon: lon, lat: lat, cityName: cityName, updatedAt: Date())
         locationStorage.save(value)
         NotificationCenter.default.post(name: .locationDidChange, object: nil)
+    }
+    
+    func searchCity(query: String) {
+        citySearchService.search(query: query)
     }
 
     func start() {

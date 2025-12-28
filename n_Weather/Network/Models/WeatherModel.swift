@@ -10,7 +10,6 @@ struct City: Decodable, Sendable {
     let name: String
     let coord: Coordinates
     let sunrise: Int
-    
     let sunset: Int
 }
 
@@ -24,12 +23,14 @@ struct Forecast: Decodable, Sendable {
     let date: String
     let main: Main
     let weather: [Weather]
+    let wind: Wind
 
     enum CodingKeys: String, CodingKey {
         case datetime = "dt"
         case date = "dt_txt"
         case main
         case weather
+        case wind
     }
 }
 
@@ -38,6 +39,7 @@ struct Main: Decodable, Sendable {
     let tempMin: Double
     let tempMax: Double
     let humidity: Int
+    let pressure: Int
     let feelsLike: Double
     enum CodingKeys: String, CodingKey {
         case temp
@@ -45,6 +47,7 @@ struct Main: Decodable, Sendable {
         case tempMax = "temp_max"
         case humidity
         case feelsLike = "feels_like"
+        case pressure
     }
 }
 
@@ -52,4 +55,10 @@ struct Weather: Decodable, Sendable {
     let main: String
     let description: String
     let id: Int
+}
+
+struct Wind: Decodable, Sendable {
+    let speed: Double
+    let deg: Int
+    let gust: Double
 }

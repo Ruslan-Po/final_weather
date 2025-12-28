@@ -6,7 +6,7 @@ final class ForecastAssembler {
 
         let presenter = ForecastViewPresenter(
             view: view,
-            client: container.client,
+            repository: container.weatherRepository,
             locationStorage: container.storage
         )
         view.presenter = presenter

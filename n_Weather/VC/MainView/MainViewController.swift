@@ -110,6 +110,7 @@ class MainViewController: UIViewController {
     
     @objc func getUserLocation() {
         presenter.fetchWeatherForCurrentLocation()
+
     }
     
     func setupSearchBar() {
@@ -234,7 +235,6 @@ extension MainViewController: UISearchResultsUpdating {
 }
 
 extension MainViewController: UITableViewDataSource, UITableViewDelegate {
-
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         searchResults.count
     }
@@ -249,7 +249,6 @@ extension MainViewController: UITableViewDataSource, UITableViewDelegate {
         let city = searchResults[indexPath.row]
         searchController.isActive = false
         searchResultsTableView.isHidden = true
-        
         presenter.searchWeather(for: city)
     }
 }

@@ -1,53 +1,48 @@
-import MapKit
+import CoreLocation
 
-final class CitySearchService: NSObject, CitySearchServiceProtocol {
+final class CitySearchService: CitySearchServiceProtocol {
     var onResultsUpdated: (([String]) -> Void)?
     var onError: ((any Error) -> Void)?
-
-    private let completer: MKLocalSearchCompleter
     
-    override init() {
-        completer = MKLocalSearchCompleter()
-        super.init()
-        
-        completer.delegate = self
-        completer.resultTypes = .address
-    }
+    private let geocoder = CLGeocoder()
+    private let locale = Locale(identifier: "en_US")
     
     func search(query: String) {
-        completer.queryFragment = query
+        geocoder.cancelGeocode()
+        
+        geocoder.geocodeAddressString(
+            query,
+            in: nil,
+            preferredLocale: locale
+        ) { [weak self] placemarks, error in
+            
+            if let error = error {
+                let nsError = error as NSError
+                if nsError.domain == kCLErrorDomain &&
+                   nsError.code == CLError.geocodeFoundNoResult.rawValue {
+                    self?.onResultsUpdated?([])
+                    return
+                }
+                self?.onError?(error)
+                return
+            }
+            
+            var seen = Set<String>()
+            let cities = placemarks?
+                .compactMap { placemark -> String? in
+                    guard let city = placemark.locality else { return nil }
+                    let result = placemark.country != nil
+                        ? "\(city), \(placemark.country!)"
+                        : city
+                    return seen.insert(result).inserted ? result : nil
+                }
+                .prefix(5)
+            
+            self?.onResultsUpdated?(Array(cities ?? []))
+        }
     }
     
     func cancelSearch() {
-        completer.cancel()
-    }
-}
-
-extension CitySearchService: MKLocalSearchCompleterDelegate {
-    func completerDidUpdateResults(_ completer: MKLocalSearchCompleter){
-        let cities = completer.results
-                .filter { result in
-                    !result.title.contains("Road") &&
-                    !result.title.contains("Drive") &&
-                    !result.title.contains("Street") &&
-                    !result.title.contains("Avenue")
-                }
-                .prefix(5)
-                .map { result in
-                    if result.subtitle.isEmpty {
-                        return result.title
-                    } else {
-                        return "\(result.title), \(result.subtitle)"
-                    }
-                }
-            onResultsUpdated?(Array(cities))
-    }
-
-    func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: any Error){
-        if(error as NSError).code == MKError.placemarkNotFound.rawValue {
-            onResultsUpdated?([])
-            return
-        }
-        onError?(error)
+        geocoder.cancelGeocode()
     }
 }

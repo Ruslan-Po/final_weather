@@ -5,7 +5,7 @@ internal import _LocationEssentials
 final class MainViewPresenter: MainViewPresenterProtocol {
 
     weak var view: MainViewControllerProtocol?
-    private let client: WeatherClientProtocol
+    private let repository: WeatherRepositoryProtocol
     var locationService: LocationServiceProtocol?
     private let locationStorage: LocationStorageProtocol
     private let greetingHelper = Greetings()
@@ -13,11 +13,11 @@ final class MainViewPresenter: MainViewPresenterProtocol {
 
     init(view: MainViewControllerProtocol,
          locationService: LocationServiceProtocol,
-         client: WeatherClientProtocol,
+         repository: WeatherRepositoryProtocol,
          citySearchService: CitySearchServiceProtocol,
          locationStorage: LocationStorageProtocol) {
         self.view = view
-        self.client = client
+        self.repository = repository
         self.locationService = locationService
         self.locationStorage = locationStorage
         self.citySearchService = citySearchService
@@ -29,6 +29,14 @@ final class MainViewPresenter: MainViewPresenterProtocol {
         citySearchService.onResultsUpdated = { [weak self] cities in
             self?.view?.displayCitySearchResults(cities)
         }
+    }
+    
+    private func notifyLocationChanged(cityName: String) {
+        NotificationCenter.default.post(
+            name: .locationDidChange,
+            object: nil,
+            userInfo: ["cityName": cityName]
+        )
     }
     
      func createViewModel(from weather: WeatherModel) -> MainViewModel {
@@ -70,7 +78,6 @@ final class MainViewPresenter: MainViewPresenterProtocol {
     private func saveLastLocation(lon: Double, lat: Double, cityName: String) {
         let value = LastLocation(lon: lon, lat: lat, cityName: cityName, updatedAt: Date())
         locationStorage.save(value)
-        NotificationCenter.default.post(name: .locationDidChange, object: nil)
     }
     
     func searchCity(query: String) {
@@ -110,6 +117,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
             case .success(let coordinates):
                 self.saveLastLocation(lon: coordinates.longitude, lat: coordinates.latitude, cityName: cityName)
                 self.fetchWeatherByCoordinates(lon: coordinates.longitude, lat: coordinates.latitude)
+                
             case .failure(let error):
                 DispatchQueue.main.async {self.view?.displayError(error: error)}
             }
@@ -117,13 +125,19 @@ final class MainViewPresenter: MainViewPresenterProtocol {
     }
 
     func fetchWeatherByCoordinates(lon: Double, lat: Double) {
-        client.fetch(lon: lon, lat: lat) { [weak self] result in
+        repository.fetchCurrentWeather(lon: lon, lat: lat, forceRefresh: false) {[weak self] result in
             guard let self else { return }
             DispatchQueue.main.async {
                 switch result {
                 case .success(let weather):
-                    self.saveLastLocation(lon: lon, lat: lat, cityName: weather.city.name)
+                    let value = LastLocation(lon: lon, lat: lat,
+                                             cityName: weather.city.name,
+                                             updatedAt: Date())
+                                   self.locationStorage.save(value)
                     let viewmodel = self.createViewModel(from: weather)
+                    
+                    self.notifyLocationChanged(cityName: weather.city.name)
+                    
                     self.view?.displayWeather(data: viewmodel)
                 case .failure(let error):
                     self.view?.displayError(error: error)

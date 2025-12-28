@@ -10,7 +10,6 @@ class WeatherRepository: WeatherRepositoryProtocol {
     private var cachedWeather: WeatherModel?
     private var cachedCoord: (lon: Double, lat: Double)?
     private var lastFetchTime: Date?
-
     private let cacheDuration: TimeInterval = 300
 
     init(client: WeatherClientProtocol) {
@@ -27,12 +26,10 @@ class WeatherRepository: WeatherRepositoryProtocol {
             let cached = cachedWeather,
             isCacheValid(for: lon, lat: lat) {
             completion(.success(cached))
+            return
         }
-
+        
         client.fetch(lon: lon, lat: lat) { [weak self] result in
-            
-            
-            
             if case .success(let weather) = result {
                 self?.cachedWeather = weather
                 self?.cachedCoord = (lon, lat)
@@ -49,7 +46,6 @@ class WeatherRepository: WeatherRepositoryProtocol {
         
         let isCoordMached = coords.lat == lat && coords.lon == lon
         let isTimeNotExpired = Date().timeIntervalSince(lastFetch) < cacheDuration
-        
         return isCoordMached && isTimeNotExpired
     }
 }

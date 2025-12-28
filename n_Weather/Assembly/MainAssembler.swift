@@ -7,7 +7,7 @@ final class MainAssembler {
         let presenter = MainViewPresenter(
             view: view,
             locationService: container.locationService,
-            client: container.client,
+            repository: container.weatherRepository,
             citySearchService: container.citySearchService,
             locationStorage: container.storage
         )
@@ -18,3 +18,5 @@ final class MainAssembler {
         return navigationController
     }
 }
+
+

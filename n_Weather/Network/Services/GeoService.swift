@@ -64,9 +64,9 @@ class LocationService: NSObject, LocationServiceProtocol {
     }
 
     func getCoordinates(for cityName: String, completion: @escaping (Result<CLLocationCoordinate2D, Error>) -> Void) {
-        geocoder.geocodeAddressString(cityName) { [weak self] placemarks, error in
+        let normalizedName = normalizeCityName(cityName)
+        geocoder.geocodeAddressString(normalizedName) { [weak self] placemarks, error in
             guard let self = self else { return }
-
             self.completionQueue.async {
                 if let error = error {
                     if let clError = error as? CLError {
@@ -91,6 +91,14 @@ class LocationService: NSObject, LocationServiceProtocol {
                 completion(.success(coordinate))
             }
         }
+    }
+    
+    private func normalizeCityName(_ name: String) -> String {
+        let replacements = [
+            "Москва, Россия": "Moscow, Russia",
+            "Москва": "Moscow"
+        ]
+        return replacements[name] ?? name
     }
 
     func getCityName(for coordinates: CLLocationCoordinate2D, completion: @escaping (Result<String, Error>) -> Void) {

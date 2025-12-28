@@ -15,13 +15,6 @@ class ForecastViewController: UIViewController {
         return view
     }()
     
-    private func setupNotifications() {
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(updateForecast),
-                                               name: .locationDidChange,
-                                               object: nil)
-    }
-    
     @objc private func updateForecast(_: Notification) {
         presenter?.fetchUsingSavedLocation()
         tableViewTitle = presenter.getSavedCityName() ?? "Forecast"
@@ -31,7 +24,7 @@ class ForecastViewController: UIViewController {
         view.addSubview(forecastTableView)
         super.viewDidLoad()
         view.backgroundColor = .systemGray6
-        setupNotifications()
+        subscribeToNotifications()
         tableViewTitle = presenter.getSavedCityName() ?? "Forecast"
         presenter?.fetchUsingSavedLocation()
 
@@ -42,6 +35,15 @@ class ForecastViewController: UIViewController {
             forecastTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
             ])
         }
+    
+    private func subscribeToNotifications() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateForecast),
+            name: .locationDidChange,
+            object: nil
+        )
+    }
 }
 
 extension ForecastViewController: ForecastViewControllerProtocol {

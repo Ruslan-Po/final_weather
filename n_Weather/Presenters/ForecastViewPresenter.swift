@@ -4,14 +4,14 @@ internal import _LocationEssentials
 
 final class ForecastViewPresenter: ForecastViewPresenterProtocol {
     weak var view: ForecastViewControllerProtocol?
-    private let client: WeatherClientProtocol
+    private let repository: WeatherRepositoryProtocol
     private let locationStorage: LocationStorageProtocol
 
     init(view: ForecastViewControllerProtocol,
-         client: WeatherClientProtocol,
+         repository: WeatherRepositoryProtocol,
          locationStorage: LocationStorageProtocol) {
         self.view = view
-        self.client = client
+        self.repository = repository
         self.locationStorage = locationStorage
     }
 
@@ -44,23 +44,22 @@ final class ForecastViewPresenter: ForecastViewPresenterProtocol {
     }
 
     func fetchWeatherByCoordinates(lon: Double, lat: Double) {
-        client.fetch(lon: lon, lat: lat) { [weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let weatherModel):
-                    if let filtered = self?.filter(weatherModel: weatherModel) {
-                        self?.view?.getForecast(filtered)
-                    }
-                    let updated = LastLocation(
-                        lon: lon,
-                        lat: lat,
-                        cityName: weatherModel.city.name,
-                        updatedAt: Date()
-                    )
-                    self?.locationStorage.save(updated)
-                case .failure(let error):
-                    self?.view?.displayError(error)
-                }
+        repository.fetchCurrentWeather(lon: lon, lat: lat, forceRefresh: false) { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case .success(let weatherModel):
+                let filtered = self.filter(weatherModel: weatherModel)
+                                self.view?.getForecast(filtered)
+
+                let updated = LastLocation(
+                    lon: lon,
+                    lat: lat,
+                    cityName: weatherModel.city.name,
+                    updatedAt: Date()
+                )
+                self.locationStorage.save(updated)
+            case .failure(let error):
+                self.view?.displayError(error)
             }
         }
     }

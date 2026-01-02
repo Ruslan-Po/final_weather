@@ -24,6 +24,7 @@ struct Forecast: Decodable, Sendable {
     let main: Main
     let weather: [Weather]
     let wind: Wind
+    let visibility: Int
 
     enum CodingKeys: String, CodingKey {
         case datetime = "dt"
@@ -31,6 +32,7 @@ struct Forecast: Decodable, Sendable {
         case main
         case weather
         case wind
+        case visibility
     }
 }
 
@@ -62,3 +64,4 @@ struct Wind: Decodable, Sendable {
     let deg: Int
     let gust: Double
 }
+

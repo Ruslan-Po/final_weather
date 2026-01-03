@@ -180,6 +180,8 @@ class MainViewController: UIViewController {
         setupSearchResultsTableView()
         setupSearchBar()
     }
+    
+    
 }
 
 extension MainViewController: MainViewControllerProtocol {
@@ -204,6 +206,7 @@ extension MainViewController: MainViewControllerProtocol {
     func displayError(error: Error) {
         showError(error)
     }
+    
 }
 
 extension MainViewController: UITextFieldDelegate {

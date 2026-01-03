@@ -6,6 +6,10 @@ protocol WeatherViewPresenterProtocol: AnyObject {
     func fetchWeatherByCoordinates(lon: Double, lat: Double)
 }
 
+protocol FavoritesViewPresenterProtocol: AnyObject {
+    func loadSavedWeather()
+}
+
 protocol MainViewPresenterProtocol: WeatherViewPresenterProtocol {
     func fetchWeatherForCurrentLocation()
     func searchWeather(for cityName: String)

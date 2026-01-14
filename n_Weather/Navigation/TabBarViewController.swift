@@ -49,7 +49,14 @@ class TabBarViewController: UITabBarController {
         )
         detail.tabBarItem.imageInsets = iconInsets
         
-        setViewControllers([mainView, forecast, detail], animated: false)
+        let favorites = FavoritesAssembler.maskeFavoritesViewController(container: container)
+        favorites.tabBarItem = UITabBarItem(
+            title: "Favorites",
+            image: UIImage(systemName: "heart", withConfiguration: config),
+            selectedImage: UIImage(systemName: "heart.fill",withConfiguration: config)
+        )
+        
+        setViewControllers([mainView, forecast, detail,favorites], animated: false)
     }
 }
 

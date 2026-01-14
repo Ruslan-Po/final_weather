@@ -17,7 +17,7 @@ extension FavoriteCity {
         return NSFetchRequest<FavoriteCity>(entityName: "FavoriteCity")
     }
 
-    @NSManaged public var cityName: String?
+    @NSManaged public var cityName: String
     @NSManaged public var sunrise: Int64
     @NSManaged public var sunset: Int64
     @NSManaged public var latitude: Double
@@ -52,7 +52,7 @@ extension FavoriteCity {
     
     var forecastArray: [CachedWeather] {
         let set = forecast as? Set<CachedWeather> ?? []
-        return set.sorted { $0.datetime < $1.datetime }
+        return set.sorted { $0.datetime > $1.datetime }
     }
     var currentWeather: CachedWeather? {
         return forecastArray.first

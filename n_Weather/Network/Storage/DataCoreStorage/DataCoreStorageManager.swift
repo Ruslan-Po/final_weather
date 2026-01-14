@@ -1,7 +1,7 @@
 import Foundation
 import CoreData
 
-class DataCoreStorageManager {
+class DataCoreStorageManager: FavoritesStorageProtocol {
     
     private init() {}
     static let shared = DataCoreStorageManager()
@@ -87,7 +87,6 @@ class DataCoreStorageManager {
     func fetchAllFavorites() -> [FavoriteCity] {
         let request = FavoriteCity.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "cachedAt", ascending: true)]
-        
         do {
             return try context.fetch(request)
         } catch {

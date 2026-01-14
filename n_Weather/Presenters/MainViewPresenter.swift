@@ -10,17 +10,20 @@ final class MainViewPresenter: MainViewPresenterProtocol {
     private let locationStorage: LocationStorageProtocol
     private let greetingHelper = Greetings()
     private let citySearchService: CitySearchServiceProtocol
+    private let favoritesStorage: FavoritesStorageProtocol
 
     init(view: MainViewControllerProtocol,
          locationService: LocationServiceProtocol,
          repository: WeatherRepositoryProtocol,
          citySearchService: CitySearchServiceProtocol,
-         locationStorage: LocationStorageProtocol) {
+         locationStorage: LocationStorageProtocol,
+         favoritesStorage: FavoritesStorageProtocol ) {
         self.view = view
         self.repository = repository
         self.locationService = locationService
         self.locationStorage = locationStorage
         self.citySearchService = citySearchService
+        self.favoritesStorage = favoritesStorage
         
         setupCitySearch()
     }

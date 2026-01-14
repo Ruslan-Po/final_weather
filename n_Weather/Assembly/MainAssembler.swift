@@ -9,7 +9,8 @@ final class MainAssembler {
             locationService: container.locationService,
             repository: container.weatherRepository,
             citySearchService: container.citySearchService,
-            locationStorage: container.storage
+            locationStorage: container.storage,
+            favoritesStorage: container.favoritesStorage
         )
         view.presenter = presenter
         

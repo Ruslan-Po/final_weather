@@ -2,7 +2,7 @@ import UIKit
 import Foundation
 internal import _LocationEssentials
 
-final class DetailedViewPresenter : DetailedViewPresetnerProtocol {
+final class DetailedViewPresenter: DetailedViewPresetnerProtocol {
     weak var view: DetailedViewControllerProtocol?
     private let repository: WeatherRepositoryProtocol
     private let locationStorage: LocationStorageProtocol

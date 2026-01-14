@@ -1,0 +1,13 @@
+# Системные файлы macOS
+.DS_Store
+
+# Xcode пользовательские файлы
+*.xcuserstate
+xcuserdata/
+
+# Прочие Xcode файлы
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM

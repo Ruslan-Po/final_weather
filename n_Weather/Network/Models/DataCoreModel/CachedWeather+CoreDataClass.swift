@@ -1,11 +1,5 @@
 //
 //  CachedWeather+CoreDataClass.swift
-//  n_Weather
-//
-//  Created by Ruslan Popovich on 03/01/2026.
-//
-//
-
 public import Foundation
 public import CoreData
 
@@ -40,6 +34,7 @@ extension CachedWeather {
     @NSManaged public var windGust: Double
     @NSManaged public var windSpeed: Double
     @NSManaged public var city: FavoriteCity?
+    @NSManaged public var id: Int16
 
 }
 

@@ -4,6 +4,7 @@ protocol MainViewControllerProtocol: AnyObject {
     func displayWeather(data: MainViewModel)
     func displayError(error: Error)
     func displayCitySearchResults(_ cities: [String])
+    func showCityAdded()
 }
 
 class MainViewController: UIViewController {
@@ -108,6 +109,23 @@ class MainViewController: UIViewController {
         return button
     }()
     
+    lazy var favoriteButton: UIButton = {
+        let button = UIButton(type: .system)
+        let pointSize: CGFloat = 25.0
+        let symbolConfig = UIImage.SymbolConfiguration(pointSize: pointSize)
+        let buttonImage = UIImage(systemName: "star.square", withConfiguration: symbolConfig)
+        button.tintColor = AppColors.tint
+        
+        button.setImage(buttonImage, for: .normal)
+        button.addTarget(self, action: #selector(addToFavoriteFu), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    @objc func addToFavoriteFu(){
+        presenter.saveCityToFavorites()
+    }
+    
     @objc func getUserLocation() {
         presenter.fetchWeatherForCurrentLocation()
 
@@ -141,6 +159,7 @@ class MainViewController: UIViewController {
         view.addSubview(sunStackView)
         view.addSubview(locationButton)
         view.addSubview(cityLabel)
+        view.addSubview(favoriteButton)
         
         NSLayoutConstraint.activate([
             
@@ -151,6 +170,11 @@ class MainViewController: UIViewController {
             locationButton.bottomAnchor.constraint(equalTo: cityLabel.bottomAnchor),
             locationButton.widthAnchor.constraint(equalToConstant: Layout.constansWidth),
             locationButton.heightAnchor.constraint(equalToConstant: Layout.constansHeight),
+            
+            favoriteButton.leadingAnchor.constraint(equalTo: locationButton.trailingAnchor, constant: Layout.smallPadding),
+            favoriteButton.bottomAnchor.constraint(equalTo: cityLabel.bottomAnchor),
+            favoriteButton.widthAnchor.constraint(equalToConstant: Layout.constansWidth),
+            favoriteButton.heightAnchor.constraint(equalToConstant: Layout.constansHeight),
             
             
             weatherImage.topAnchor.constraint(equalTo: cityLabel.bottomAnchor, constant: Layout.smallPadding),
@@ -180,11 +204,13 @@ class MainViewController: UIViewController {
         setupSearchResultsTableView()
         setupSearchBar()
     }
-    
-    
 }
 
 extension MainViewController: MainViewControllerProtocol {
+    func showCityAdded() {
+        print("cityAdded")
+    }
+    
     func displayCitySearchResults(_ cities: [String]) {
         searchResults = cities
         searchResultsTableView.reloadData()

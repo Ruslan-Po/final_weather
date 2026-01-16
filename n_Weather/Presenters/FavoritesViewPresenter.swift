@@ -3,6 +3,7 @@ import Foundation
 import CoreData
 
 class FavoritesViewPresenter: FavoritesViewPresenterProtocol {
+
     weak var view: FavoritesViewControllerProtocol?
     let dataCoreManager: FavoritesStorageProtocol
     
@@ -12,10 +13,9 @@ class FavoritesViewPresenter: FavoritesViewPresenterProtocol {
         self.dataCoreManager = dataCoreManager
     }
     
-    func loadSavedWeather() {
+    func loadSavedWeather() -> [FavoriteCity] {
         let cities = dataCoreManager.fetchAllFavorites()
-        
-        
+        return cities
     }
 }
 

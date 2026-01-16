@@ -4,6 +4,8 @@ internal import _LocationEssentials
 
 final class MainViewPresenter: MainViewPresenterProtocol {
 
+    
+
     weak var view: MainViewControllerProtocol?
     private let repository: WeatherRepositoryProtocol
     var locationService: LocationServiceProtocol?
@@ -147,5 +149,24 @@ final class MainViewPresenter: MainViewPresenterProtocol {
                 }
             }
         }
+    }
+    
+    func saveCityToFavorites() {
+        guard let lastLocation = locationStorage.get() else {return}
+        
+        repository.fetchCurrentWeather(lon: lastLocation.lon, lat: lastLocation.lat, forceRefresh: false) { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let weather):
+                    self.favoritesStorage.saveFavoriteCity(from: weather)
+                    self.view?.showCityAdded()
+                    print("added")
+                case .failure(let error):
+                    self.view?.displayError(error: error)
+                }
+            }
+        }
+        
     }
 }

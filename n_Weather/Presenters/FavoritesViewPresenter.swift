@@ -4,6 +4,8 @@ import CoreData
 
 class FavoritesViewPresenter: FavoritesViewPresenterProtocol {
 
+    
+
     weak var view: FavoritesViewControllerProtocol?
     let dataCoreManager: FavoritesStorageProtocol
     
@@ -17,5 +19,7 @@ class FavoritesViewPresenter: FavoritesViewPresenterProtocol {
         let cities = dataCoreManager.fetchAllFavorites()
         return cities
     }
+    
+
 }
 

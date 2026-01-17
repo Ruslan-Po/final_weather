@@ -5,6 +5,7 @@ protocol MainViewControllerProtocol: AnyObject {
     func displayError(error: Error)
     func displayCitySearchResults(_ cities: [String])
     func showCityAdded()
+    func showCityRemoved()
 }
 
 class MainViewController: UIViewController {
@@ -117,18 +118,29 @@ class MainViewController: UIViewController {
         button.tintColor = AppColors.tint
         
         button.setImage(buttonImage, for: .normal)
-        button.addTarget(self, action: #selector(addToFavoriteFu), for: .touchUpInside)
+        button.addTarget(self, action: #selector(updateFavorites), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
-    @objc func addToFavoriteFu(){
-        presenter.saveCityToFavorites()
+    private func updateFavoriteButtonState() {
+        let isFavorite = presenter.toggleCityFavoriteStatus()
+        let pointSize: CGFloat = 25.0
+        let symbolConfig = UIImage.SymbolConfiguration(pointSize: pointSize)
+        let imageName = isFavorite ? "star.square.fill" : "star.square"
+        let buttonImage = UIImage(systemName: imageName, withConfiguration: symbolConfig)
+        favoriteButton.setImage(buttonImage, for: .normal)
     }
+    
+    @objc func updateFavorites(){
+        if presenter.toggleCityFavoriteStatus(){
+            presenter.removeCityFromFavorites()
+        } else {presenter.saveCityToFavorites()}
+    }
+    
     
     @objc func getUserLocation() {
         presenter.fetchWeatherForCurrentLocation()
-
     }
     
     func setupSearchBar() {
@@ -207,8 +219,12 @@ class MainViewController: UIViewController {
 }
 
 extension MainViewController: MainViewControllerProtocol {
+    func showCityRemoved() {
+        updateFavoriteButtonState()
+    }
+    
     func showCityAdded() {
-        print("cityAdded")
+        updateFavoriteButtonState()
     }
     
     func displayCitySearchResults(_ cities: [String]) {
@@ -227,6 +243,7 @@ extension MainViewController: MainViewControllerProtocol {
         greetingsLabel.text = data.greeting
         timeLabel.text = data.currentTime
         dateLabel.text = data.currentDate
+        updateFavoriteButtonState()
     }
     
     func displayError(error: Error) {

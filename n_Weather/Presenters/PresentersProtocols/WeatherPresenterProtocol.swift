@@ -13,7 +13,9 @@ protocol FavoritesViewPresenterProtocol: AnyObject {
 protocol MainViewPresenterProtocol: WeatherViewPresenterProtocol {
     func fetchWeatherForCurrentLocation()
     func saveCityToFavorites()
+    func removeCityFromFavorites()
     func searchWeather(for cityName: String)
+    func toggleCityFavoriteStatus()-> Bool
     func searchCity(query: String)
     func start()
 }

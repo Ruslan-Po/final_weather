@@ -7,6 +7,7 @@ class FavotitesTableView: UIView {
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
         tableView.rowHeight = 200
+        tableView.backgroundColor = .white
         tableView.separatorStyle = .none
         tableView.allowsSelection = false
         tableView.delegate = self
@@ -26,6 +27,7 @@ class FavotitesTableView: UIView {
     }
     
     private func setupUI() {
+        backgroundColor = .white
         addSubview(tableView)
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: topAnchor),

@@ -70,8 +70,8 @@ class DataCoreStorageManager: FavoritesStorageProtocol {
         cachedWeather.pressure = Int16(data.main.pressure)
         cachedWeather.windSpeed = data.wind.speed
         cachedWeather.windDeg = Int16(data.wind.deg)
-        cachedWeather.windGust = data.wind.gust
-        cachedWeather.visibility = Int32(data.visibility)
+        cachedWeather.visibility = Int32(data.visibility ?? 0)
+        cachedWeather.windGust = data.wind.gust ?? 0
         
         if let weather = data.weather.first {
             cachedWeather.weatherCondition = weather.main

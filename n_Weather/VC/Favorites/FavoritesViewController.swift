@@ -8,7 +8,7 @@ protocol FavoritesViewControllerProtocol: AnyObject {
 
 class FavoritesViewController: UIViewController {
     var presenter: FavoritesViewPresenterProtocol!
-    var favoritesCityes: [FavoriteCity] = []
+    var favoriteCityes: [FavoriteCity] = []
     
     lazy var favoritesCityesTableView: FavotitesTableView = {
         let view = FavotitesTableView()
@@ -16,13 +16,29 @@ class FavoritesViewController: UIViewController {
         return view
     }()
     
+    private func setupNotifications() {
+         NotificationCenter.default.addObserver(
+             self,
+             selector: #selector(handleFavoritesChange),
+             name: .favoritesDidChange,
+             object: nil
+         )
+     }
+    
+    @objc private func handleFavoritesChange(){
+        DispatchQueue.main.async { [weak self] in
+                   self?.getWeather()
+               }
+    }
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemGray6
+        view.backgroundColor = .white
         view.addSubview(favoritesCityesTableView)
         getWeather()
-        
-        
+        setupNotifications()
+
         NSLayoutConstraint.activate([
             favoritesCityesTableView.topAnchor.constraint(equalTo: view.topAnchor),
             favoritesCityesTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -30,14 +46,18 @@ class FavoritesViewController: UIViewController {
             favoritesCityesTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
             ])
     }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
 }
 
 extension FavoritesViewController: FavoritesViewControllerProtocol {
     func getWeather() {
-        favoritesCityes = presenter.loadSavedWeather()
-        favoritesCityesTableView.displayFavoriteCitiesTable(favorites: favoritesCityes)
+        favoriteCityes = presenter.loadSavedWeather()
+        favoritesCityesTableView.displayFavoriteCitiesTable(favorites: favoriteCityes)
         
-        if let city = favoritesCityes.first {
+        if let city = favoriteCityes.first {
             print("City name: \(city.cityName)")
                 print("Latitude: \(city.latitude)")
                 print("Forecasts count: \(city.forecastArray.count)")

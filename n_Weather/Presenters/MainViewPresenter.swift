@@ -4,8 +4,6 @@ internal import _LocationEssentials
 
 final class MainViewPresenter: MainViewPresenterProtocol {
 
-    
-
     weak var view: MainViewControllerProtocol?
     private let repository: WeatherRepositoryProtocol
     var locationService: LocationServiceProtocol?
@@ -13,6 +11,8 @@ final class MainViewPresenter: MainViewPresenterProtocol {
     private let greetingHelper = Greetings()
     private let citySearchService: CitySearchServiceProtocol
     private let favoritesStorage: FavoritesStorageProtocol
+    
+    private var currentCityName: String?
 
     init(view: MainViewControllerProtocol,
          locationService: LocationServiceProtocol,
@@ -42,6 +42,10 @@ final class MainViewPresenter: MainViewPresenterProtocol {
             object: nil,
             userInfo: ["cityName": cityName]
         )
+    }
+    
+    private func notyfyFavoritesUpdated() {
+        NotificationCenter.default.post(name: .favoritesDidChange, object: nil)
     }
     
      func createViewModel(from weather: WeatherModel) -> MainViewModel {
@@ -83,6 +87,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
     private func saveLastLocation(lon: Double, lat: Double, cityName: String) {
         let value = LastLocation(lon: lon, lat: lat, cityName: cityName, updatedAt: Date())
         locationStorage.save(value)
+        currentCityName = value.cityName
     }
     
     func searchCity(query: String) {
@@ -135,6 +140,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let weather):
+                    self.currentCityName = weather.city.name
                     let value = LastLocation(lon: lon, lat: lat,
                                              cityName: weather.city.name,
                                              updatedAt: Date())
@@ -153,6 +159,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
     
     func saveCityToFavorites() {
         guard let lastLocation = locationStorage.get() else {return}
+        NotificationCenter.default.post(name: .favoritesDidChange, object: nil)
         
         repository.fetchCurrentWeather(lon: lastLocation.lon, lat: lastLocation.lat, forceRefresh: false) { [weak self] result in
             guard let self else { return }
@@ -167,6 +174,23 @@ final class MainViewPresenter: MainViewPresenterProtocol {
                 }
             }
         }
-        
     }
+    
+    func removeCityFromFavorites() {
+        guard let lastLocation = locationStorage.get() else { return }
+        
+        favoritesStorage.deleteFavorite(byName: lastLocation.cityName)
+        NotificationCenter.default.post(name: .favoritesDidChange, object: nil)
+        view?.showCityRemoved()
+    }
+    
+    func toggleCityFavoriteStatus() -> Bool {
+        let city = favoritesStorage.fetchAllFavorites()
+        if city.contains(where: { $0.cityName == currentCityName}) {
+            return true
+        } else {
+            return false
+        }
+    }
+    
 }

@@ -89,6 +89,8 @@ class WeatherService: WeatherServiceProtocol {
                     }
                 } catch {
                     completionQueue.async {
+
+
                         completion(.failure(WeatherErrors.decodingFailed))
                     }
                 }

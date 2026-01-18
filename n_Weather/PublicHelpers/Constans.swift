@@ -6,7 +6,7 @@ enum Layout {
     static let mediumPadding: CGFloat = 15
     static let largePadding: CGFloat = 20
     static let extraLargePadding: CGFloat = 30
-    static let ultraLargePadding: CGFloat = 90
+    static let ultraLargePadding: CGFloat = 60
     
     static let cornerRadius: CGFloat = 8
     static let constansHeight: CGFloat = 44
@@ -45,4 +45,7 @@ enum AppColors {
 
 enum CellIdentifiers {
     static let forecastCell = "ForecastTableViewCell"
+    static let favoriteCell = "FavoriteTableViewCell"
+    static let favoriteCollectionViewCell = "FavoriteCollectionViewCell"
+    static let searchCell = "SearchTableViewCell"
 }

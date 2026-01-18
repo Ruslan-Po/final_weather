@@ -4,6 +4,8 @@ protocol MainViewControllerProtocol: AnyObject {
     func displayWeather(data: MainViewModel)
     func displayError(error: Error)
     func displayCitySearchResults(_ cities: [String])
+    func showCityAdded()
+    func showCityRemoved()
 }
 
 class MainViewController: UIViewController {
@@ -95,22 +97,58 @@ class MainViewController: UIViewController {
         return stackView
     }()
     
-    lazy var locationButton: UIButton = {
-        let button = UIButton(type: .system)
-        let pointSize: CGFloat = 25.0
-        let symbolConfig = UIImage.SymbolConfiguration(pointSize: pointSize)
-        let buttonImage = UIImage(systemName: "location.app.fill", withConfiguration: symbolConfig)
-        button.tintColor = AppColors.tint
+    lazy var favoriteImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "star.square")
+        imageView.tintColor = AppColors.tint
+        imageView.contentMode = .scaleAspectFit
+        imageView.isUserInteractionEnabled = true
         
-        button.setImage(buttonImage, for: .normal)
-        button.addTarget(self, action: #selector(getUserLocation), for: .touchUpInside)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
+        let tap = UITapGestureRecognizer(target: self, action: #selector(updateFavorites))
+        imageView.addGestureRecognizer(tap)
+        
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
     }()
+    
+    lazy var locationImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "location.square.fill")
+        imageView.tintColor = AppColors.tint
+        imageView.contentMode = .scaleAspectFit
+        imageView.isUserInteractionEnabled = true
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(getUserLocation))
+        imageView.addGestureRecognizer(tap)
+        
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+    private func updateFavoriteButtonState() {
+        let isFavorite = presenter.toggleCityFavoriteStatus()
+        let imageName = isFavorite ? "star.square.fill" : "star.square"
+        favoriteImageView.image = UIImage(systemName: imageName)
+    }
+    
+    lazy var lastUpdatedLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 12, weight: .light)
+        label.textAlignment = .left
+
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    @objc func updateFavorites(){
+        if presenter.toggleCityFavoriteStatus(){
+            presenter.removeCityFromFavorites()
+        } else {presenter.saveCityToFavorites()}
+    }
+    
     
     @objc func getUserLocation() {
         presenter.fetchWeatherForCurrentLocation()
-
     }
     
     func setupSearchBar() {
@@ -131,7 +169,7 @@ class MainViewController: UIViewController {
             searchResultsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             searchResultsTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
-        searchResultsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "CityCell")
+        searchResultsTableView.register(UITableViewCell.self, forCellReuseIdentifier: CellIdentifiers.searchCell)
     }
     
     func setupUI() {
@@ -139,18 +177,27 @@ class MainViewController: UIViewController {
         view.addSubview(temperatureLabel)
         view.addSubview(dateTimeStackView)
         view.addSubview(sunStackView)
-        view.addSubview(locationButton)
+        view.addSubview(locationImageView)
         view.addSubview(cityLabel)
+        view.addSubview(favoriteImageView)
+        view.addSubview(lastUpdatedLabel)
         
         NSLayoutConstraint.activate([
+            lastUpdatedLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Layout.extraSmallPadding),
+            lastUpdatedLabel.trailingAnchor.constraint(equalTo: favoriteImageView.trailingAnchor,constant: -5),
             
-            cityLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Layout.smallPadding),
-            cityLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            cityLabel.topAnchor.constraint(equalTo: lastUpdatedLabel.bottomAnchor, constant: Layout.smallPadding),
+            cityLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.largePadding),
             
-            locationButton.leadingAnchor.constraint(equalTo: cityLabel.trailingAnchor, constant: Layout.smallPadding),
-            locationButton.bottomAnchor.constraint(equalTo: cityLabel.bottomAnchor),
-            locationButton.widthAnchor.constraint(equalToConstant: Layout.constansWidth),
-            locationButton.heightAnchor.constraint(equalToConstant: Layout.constansHeight),
+            favoriteImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.mediumPadding),
+            favoriteImageView.centerYAnchor.constraint(equalTo: cityLabel.centerYAnchor),
+            favoriteImageView.widthAnchor.constraint(equalToConstant: Layout.constansWidth),
+            favoriteImageView.heightAnchor.constraint(equalToConstant: Layout.constansHeight),
+            
+            locationImageView.trailingAnchor.constraint(equalTo: favoriteImageView.leadingAnchor, constant: -Layout.extraSmallPadding),
+            locationImageView.centerYAnchor.constraint(equalTo: cityLabel.centerYAnchor),
+            locationImageView.widthAnchor.constraint(equalToConstant: Layout.constansWidth),
+            locationImageView.heightAnchor.constraint(equalToConstant: Layout.constansHeight),
             
             
             weatherImage.topAnchor.constraint(equalTo: cityLabel.bottomAnchor, constant: Layout.smallPadding),
@@ -180,11 +227,17 @@ class MainViewController: UIViewController {
         setupSearchResultsTableView()
         setupSearchBar()
     }
-    
-    
 }
 
 extension MainViewController: MainViewControllerProtocol {
+    func showCityRemoved() {
+        updateFavoriteButtonState()
+    }
+    
+    func showCityAdded() {
+        updateFavoriteButtonState()
+    }
+    
     func displayCitySearchResults(_ cities: [String]) {
         searchResults = cities
         searchResultsTableView.reloadData()
@@ -201,6 +254,9 @@ extension MainViewController: MainViewControllerProtocol {
         greetingsLabel.text = data.greeting
         timeLabel.text = data.currentTime
         dateLabel.text = data.currentDate
+        lastUpdatedLabel.text = data.lastUpdated
+        
+        updateFavoriteButtonState()
     }
     
     func displayError(error: Error) {
@@ -220,21 +276,21 @@ extension MainViewController: UITextFieldDelegate {
 
 extension MainViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
-            let text = searchController.searchBar.text ?? ""
-            searchWorkItem?.cancel()
-
-            if text.isEmpty {
-                searchResults = []
-                searchResultsTableView.reloadData()
-                searchResultsTableView.isHidden = true
-                return
-            }
-            let workItem = DispatchWorkItem { [weak self] in
-                self?.presenter.searchCity(query: text)
-            }
-            searchWorkItem = workItem
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: workItem)
+        let text = searchController.searchBar.text ?? ""
+        searchWorkItem?.cancel()
+        
+        if text.isEmpty {
+            searchResults = []
+            searchResultsTableView.reloadData()
+            searchResultsTableView.isHidden = true
+            return
         }
+        let workItem = DispatchWorkItem { [weak self] in
+            self?.presenter.searchCity(query: text)
+        }
+        searchWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: workItem)
+    }
 }
 
 extension MainViewController: UITableViewDataSource, UITableViewDelegate {
@@ -242,7 +298,7 @@ extension MainViewController: UITableViewDataSource, UITableViewDelegate {
         searchResults.count
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CityCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: CellIdentifiers.searchCell, for: indexPath)
         cell.textLabel?.text = searchResults[indexPath.row]
         return cell
     }

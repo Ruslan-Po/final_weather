@@ -7,13 +7,17 @@ protocol WeatherViewPresenterProtocol: AnyObject {
 }
 
 protocol FavoritesViewPresenterProtocol: AnyObject {
-    func loadSavedWeather()
+    func loadSavedWeather() -> [FavoriteCity]
 }
 
 protocol MainViewPresenterProtocol: WeatherViewPresenterProtocol {
     func fetchWeatherForCurrentLocation()
+    func saveCityToFavorites()
+    func removeCityFromFavorites()
     func searchWeather(for cityName: String)
+    func toggleCityFavoriteStatus()-> Bool
     func searchCity(query: String)
+    func updateFavoriteCityData(weather: WeatherModel)
     func start()
 }
 

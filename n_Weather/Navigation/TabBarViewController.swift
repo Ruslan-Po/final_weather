@@ -5,10 +5,16 @@ class TabBarViewController: UITabBarController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        tabBar.backgroundColor = AppColors.tabColor
-        tabBar.tintColor = .white
-        tabBar.barTintColor = .gray
-        setTabs()
+          
+          let appearance = UITabBarAppearance()
+          appearance.configureWithOpaqueBackground()
+          appearance.backgroundColor = AppColors.tabColor
+          
+          tabBar.standardAppearance = appearance
+          tabBar.scrollEdgeAppearance = appearance
+          
+          tabBar.tintColor = .white
+          setTabs()
     }
     
     override func viewDidLayoutSubviews() {

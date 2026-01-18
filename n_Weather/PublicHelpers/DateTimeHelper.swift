@@ -15,6 +15,12 @@ struct DateTimeHelper {
         formatter.dateFormat = "d MMM"
         return formatter
     }()
+    
+    static let updateDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MM/dd"
+        return formatter
+    }()
 
     static func formatTime(from unixTimestamp: Int) -> String {
         let date = Date(timeIntervalSince1970: TimeInterval(unixTimestamp))
@@ -32,5 +38,9 @@ struct DateTimeHelper {
 
     static func formatDate(from date: Date) -> String {
         return dateFormatter.string(from: date).capitalized
+    }
+    
+    static func updateDateFormater(from date: Date) -> String {
+        return updateDateFormatter.string(from: date)
     }
 }

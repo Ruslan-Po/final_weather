@@ -17,6 +17,7 @@ protocol MainViewPresenterProtocol: WeatherViewPresenterProtocol {
     func searchWeather(for cityName: String)
     func toggleCityFavoriteStatus()-> Bool
     func searchCity(query: String)
+    func updateFavoriteCityData(weather: WeatherModel)
     func start()
 }
 

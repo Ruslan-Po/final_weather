@@ -3,7 +3,6 @@ import Foundation
 internal import _LocationEssentials
 
 final class MainViewPresenter: MainViewPresenterProtocol {
-
     weak var view: MainViewControllerProtocol?
     private let repository: WeatherRepositoryProtocol
     var locationService: LocationServiceProtocol?
@@ -19,14 +18,16 @@ final class MainViewPresenter: MainViewPresenterProtocol {
          repository: WeatherRepositoryProtocol,
          citySearchService: CitySearchServiceProtocol,
          locationStorage: LocationStorageProtocol,
-         favoritesStorage: FavoritesStorageProtocol ) {
+         favoritesStorage: FavoritesStorageProtocol,
+         
+        ) {
         self.view = view
         self.repository = repository
         self.locationService = locationService
         self.locationStorage = locationStorage
         self.citySearchService = citySearchService
         self.favoritesStorage = favoritesStorage
-        
+       
         setupCitySearch()
     }
 
@@ -52,7 +53,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
         guard let daydata = weather.list.first else {
             return createEmptyViewModel()
         }
-        let currentTemp = String(format: "%.1f°C", daydata.main.temp)
+        let currentTemp = String(format: "%.0f °C", daydata.main.temp)
         let weatherImage = ImagesByCodeHelper.getImageNameByCode(code: daydata.weather[0].id)
         let sunrise = DateTimeHelper.formatTime(from: weather.city.sunrise)
         let sunset = DateTimeHelper.formatTime(from: weather.city.sunset)
@@ -60,6 +61,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
         let greeting = greetingHelper.setGreetingByTime
         let time = DateTimeHelper.formatTime(from: Date()).uppercased()
         let date = DateTimeHelper.formatDate(from: Date()).uppercased()
+        let lastUpdated = "Updated: \(DateTimeHelper.updateDateFormater(from: Date()))"
 
         return MainViewModel(cityName: cityName,
                              currentTemp: currentTemp,
@@ -68,7 +70,8 @@ final class MainViewPresenter: MainViewPresenterProtocol {
                              sunset: sunset,
                              greeting: greeting,
                              currentTime: time,
-                             currentDate: date)
+                             currentDate: date,
+                             lastUpdated: lastUpdated)
     }
     
     func createViewModelFromStorage(from city: FavoriteCity) -> MainViewModel {
@@ -76,7 +79,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
             return createEmptyViewModel()
         }
         
-        let currentTemp = String(format: "%.1f°C", currentWeather.temperature)
+        let currentTemp = String(format: "%.0f°C", currentWeather.temperature)
         let weatherImage = ImagesByCodeHelper.getImageNameByCode(code: Int(currentWeather.weatherId))
         let sunrise = DateTimeHelper.formatTime(from: Int(city.sunrise))
         let sunset = DateTimeHelper.formatTime(from: Int(city.sunset))
@@ -84,6 +87,10 @@ final class MainViewPresenter: MainViewPresenterProtocol {
         let greeting = greetingHelper.setGreetingByTime
         let time = DateTimeHelper.formatTime(from: Date()).uppercased()
         let date = DateTimeHelper.formatDate(from: Date()).uppercased()
+        var lastUpdated: String?
+           if let cachedAt = city.cachedAt {
+               lastUpdated = "Cached: \(DateTimeHelper.updateDateFormater(from: cachedAt))"
+           }
 
         return MainViewModel(
             cityName: cityName,
@@ -93,12 +100,12 @@ final class MainViewPresenter: MainViewPresenterProtocol {
             sunset: sunset,
             greeting: greeting,
             currentTime: time,
-            currentDate: date
+            currentDate: date,
+            lastUpdated: lastUpdated
         )
     }
     
     func loadFromStorage() -> Bool {
-        
         if let cityName = locationStorage.get()?.cityName,
            let city = favoritesStorage.findCity(byName: cityName) {
             let viewModel = createViewModelFromStorage(from: city)
@@ -122,7 +129,8 @@ final class MainViewPresenter: MainViewPresenterProtocol {
             sunset: "",
             greeting: "",
             currentTime: "",
-            currentDate: ""
+            currentDate: "",
+            lastUpdated: nil
         )
     }
     
@@ -188,7 +196,10 @@ final class MainViewPresenter: MainViewPresenterProtocol {
                                              updatedAt: Date())
                                    self.locationStorage.save(value)
                     let viewmodel = self.createViewModel(from: weather)
-                    
+
+                    if self.favoritesStorage.isFavorite(cityName: weather.city.name) {
+                        self.favoritesStorage.updateFavorite(cityName: weather.city.name, with: weather)
+                    }
                     self.notifyLocationChanged(cityName: weather.city.name)
                     self.view?.displayWeather(data: viewmodel)
                 case .failure(let error):
@@ -212,8 +223,8 @@ final class MainViewPresenter: MainViewPresenterProtocol {
                 switch result {
                 case .success(let weather):
                     self.favoritesStorage.saveFavoriteCity(from: weather)
+                    self.updateFavoriteCityData(weather: weather)
                     self.view?.showCityAdded()
-                    print("added")
                 case .failure(let error):
                     self.view?.displayError(error: error)
                 }
@@ -229,12 +240,18 @@ final class MainViewPresenter: MainViewPresenterProtocol {
         view?.showCityRemoved()
     }
     
+    
     func toggleCityFavoriteStatus() -> Bool {
-        let city = favoritesStorage.fetchAllFavorites()
-        if city.contains(where: { $0.cityName == currentCityName}) {
+
+        if favoritesStorage.isFavorite(cityName: currentCityName ?? ""){
             return true
         } else {
             return false
         }
+    }
+    
+    func updateFavoriteCityData(weather: WeatherModel) {
+        favoritesStorage.updateFavorite(cityName: currentCityName ?? "", with: weather)
+
     }
 }

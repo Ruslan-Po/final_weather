@@ -7,4 +7,5 @@ struct MainViewModel {
     let greeting: String
     let currentTime: String
     let currentDate: String
+    let lastUpdated: String? 
 }

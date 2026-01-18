@@ -47,4 +47,5 @@ enum CellIdentifiers {
     static let forecastCell = "ForecastTableViewCell"
     static let favoriteCell = "FavoriteTableViewCell"
     static let favoriteCollectionViewCell = "FavoriteCollectionViewCell"
+    static let searchCell = "SearchTableViewCell"
 }

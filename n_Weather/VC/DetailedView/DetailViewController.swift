@@ -120,7 +120,6 @@ class DetailViewController: UIViewController {
 }
 extension DetailViewController: DetailedViewControllerProtocol {
     
-    
     func getWeatherDetail(_ detailedWeather: WeatherModel) {
         let forecast = detailedWeather.list[0]
         

@@ -255,6 +255,7 @@ extension MainViewController: MainViewControllerProtocol {
         timeLabel.text = data.currentTime
         dateLabel.text = data.currentDate
         lastUpdatedLabel.text = data.lastUpdated
+        
         updateFavoriteButtonState()
     }
     

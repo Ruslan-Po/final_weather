@@ -27,6 +27,15 @@ class FavoritesTableViewCell: UITableViewCell {
         return label
     }()
     
+    private let lastUpdatedLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 12, weight: .light)
+        label.textAlignment = .left
+
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     private let favoritesCollectionView: FavoritesCollectionView = {
         let view = FavoritesCollectionView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -50,6 +59,7 @@ class FavoritesTableViewCell: UITableViewCell {
         bgView.addSubview(cityNameLabel)
         bgView.addSubview(tempLabel)
         bgView.addSubview(favoritesCollectionView)
+        bgView.addSubview(lastUpdatedLabel)
         
         favoritesCollectionView.onDaySelected = { [weak self] cachedWeather in
             self?.onDaySelected?(cachedWeather)
@@ -66,6 +76,9 @@ class FavoritesTableViewCell: UITableViewCell {
             
             tempLabel.topAnchor.constraint(equalTo: bgView.topAnchor, constant: Layout.smallPadding),
             tempLabel.trailingAnchor.constraint(equalTo: bgView.trailingAnchor, constant: -Layout.smallPadding),
+            
+            lastUpdatedLabel.topAnchor.constraint(equalTo: bgView.topAnchor, constant: Layout.smallPadding),
+            lastUpdatedLabel.trailingAnchor.constraint(equalTo: tempLabel.leadingAnchor, constant: -Layout.smallPadding),
             
             favoritesCollectionView.topAnchor.constraint(equalTo: cityNameLabel.bottomAnchor, constant: Layout.smallPadding),
             favoritesCollectionView.leadingAnchor.constraint(equalTo: bgView.leadingAnchor, constant: Layout.smallPadding),
@@ -94,10 +107,16 @@ class FavoritesTableViewCell: UITableViewCell {
     
     func favoriteCellConfig(item: FavoriteCity) {
         cityNameLabel.text = item.cityName
+        if let cachedAt = item.cachedAt {
+            lastUpdatedLabel.text = "Updated: \(DateTimeHelper.updateDateFormater(from: cachedAt))"
+        } else {
+            lastUpdatedLabel.text = nil
+        }
         
         if let current = item.currentWeather {
             tempLabel.text = String(format: "%.0f°", current.temperature)
         }
+        
         
         let filteredForecasts = filterCachedWeather(forecasts: item.forecastArray)
         favoritesCollectionView.configure(with: filteredForecasts)

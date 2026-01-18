@@ -78,13 +78,5 @@ extension FavoritesViewController: FavoritesViewControllerProtocol {
         favoriteCityes = presenter.loadSavedWeather()
         favoritesCityesTableView.displayFavoriteCitiesTable(favorites: favoriteCityes)
         
-        if let city = favoriteCityes.first {
-            print("City name: \(city.cityName)")
-                print("Latitude: \(city.latitude)")
-                print("Forecasts count: \(city.forecastArray.count)")
-            print("\(city.forecastArray[0].temperature)")
-            } else {
-                print("No favorites")
-            }
     }
 }

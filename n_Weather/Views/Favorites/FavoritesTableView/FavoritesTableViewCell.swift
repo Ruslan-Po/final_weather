@@ -1,6 +1,7 @@
 import UIKit
 
 class FavoritesTableViewCell: UITableViewCell {
+    var onDaySelected: ((CachedWeather) -> Void)?
     
     private let bgView: UIView = {
         let view = UIView()
@@ -50,6 +51,10 @@ class FavoritesTableViewCell: UITableViewCell {
         bgView.addSubview(tempLabel)
         bgView.addSubview(favoritesCollectionView)
         
+        favoritesCollectionView.onDaySelected = { [weak self] cachedWeather in
+            self?.onDaySelected?(cachedWeather)
+        }
+        
         NSLayoutConstraint.activate([
             bgView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: Layout.extraSmallPadding),
             bgView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Layout.extraSmallPadding),
@@ -70,6 +75,23 @@ class FavoritesTableViewCell: UITableViewCell {
         ])
     }
     
+    
+    func filterCachedWeather(forecasts: [CachedWeather]) -> [CachedWeather] {
+        var addedDays: Set<Date> = []
+        var filteredList: [CachedWeather] = []
+        let calendar = Calendar.current
+        let todayStart = calendar.startOfDay(for: Date())
+        
+        for item in forecasts.dropFirst() {
+            let date = Date(timeIntervalSince1970: TimeInterval(item.datetime))
+            let dayStart = calendar.startOfDay(for: date)
+            if dayStart != todayStart && addedDays.insert(dayStart).inserted {
+                filteredList.append(item)
+            }
+        }
+        return filteredList
+    }
+    
     func favoriteCellConfig(item: FavoriteCity) {
         cityNameLabel.text = item.cityName
         
@@ -77,7 +99,7 @@ class FavoritesTableViewCell: UITableViewCell {
             tempLabel.text = String(format: "%.0f°", current.temperature)
         }
         
-        let forecasts = Array(item.forecastArray.prefix(8))
-        favoritesCollectionView.configure(with: forecasts)
+        let filteredForecasts = filterCachedWeather(forecasts: item.forecastArray)
+        favoritesCollectionView.configure(with: filteredForecasts)
     }
 }

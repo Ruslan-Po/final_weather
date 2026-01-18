@@ -70,6 +70,48 @@ final class MainViewPresenter: MainViewPresenterProtocol {
                              currentTime: time,
                              currentDate: date)
     }
+    
+    func createViewModelFromStorage(from city: FavoriteCity) -> MainViewModel {
+        guard let currentWeather = city.currentWeather else {
+            return createEmptyViewModel()
+        }
+        
+        let currentTemp = String(format: "%.1f°C", currentWeather.temperature)
+        let weatherImage = ImagesByCodeHelper.getImageNameByCode(code: Int(currentWeather.weatherId))
+        let sunrise = DateTimeHelper.formatTime(from: Int(city.sunrise))
+        let sunset = DateTimeHelper.formatTime(from: Int(city.sunset))
+        let cityName = city.cityName
+        let greeting = greetingHelper.setGreetingByTime
+        let time = DateTimeHelper.formatTime(from: Date()).uppercased()
+        let date = DateTimeHelper.formatDate(from: Date()).uppercased()
+
+        return MainViewModel(
+            cityName: cityName,
+            currentTemp: currentTemp,
+            weatherImage: weatherImage,
+            sunrise: sunrise,
+            sunset: sunset,
+            greeting: greeting,
+            currentTime: time,
+            currentDate: date
+        )
+    }
+    
+    func loadFromStorage() -> Bool {
+        
+        if let cityName = locationStorage.get()?.cityName,
+           let city = favoritesStorage.findCity(byName: cityName) {
+            let viewModel = createViewModelFromStorage(from: city)
+            view?.displayWeather(data: viewModel)
+            return true
+        }
+        if let firstCity = favoritesStorage.fetchAllFavorites().first {
+            let viewModel = createViewModelFromStorage(from: firstCity)
+            view?.displayWeather(data: viewModel)
+            return true
+        }
+        return false
+    }
 
      func createEmptyViewModel() -> MainViewModel {
         return MainViewModel(
@@ -148,10 +190,13 @@ final class MainViewPresenter: MainViewPresenterProtocol {
                     let viewmodel = self.createViewModel(from: weather)
                     
                     self.notifyLocationChanged(cityName: weather.city.name)
-                    
                     self.view?.displayWeather(data: viewmodel)
                 case .failure(let error):
-                    self.view?.displayError(error: error)
+                    if self.loadFromStorage() {
+                           print("Loaded from cache")
+                       } else {
+                           self.view?.displayError(error: error)
+                       }
                 }
             }
         }
@@ -192,5 +237,4 @@ final class MainViewPresenter: MainViewPresenterProtocol {
             return false
         }
     }
-    
 }

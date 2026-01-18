@@ -31,6 +31,26 @@ class FavoritesViewController: UIViewController {
                }
     }
     
+    private func setupDaySelection() {
+           favoritesCityesTableView.onDaySelected = { [weak self] cachedWeather in
+               self?.openDetailScreen(with: cachedWeather)
+           }
+       }
+       
+       private func openDetailScreen(with cachedWeather: CachedWeather) {
+           let detailVC = DetailViewController()
+           detailVC.cachedWeatherToShow = cachedWeather
+           detailVC.showCloseButton = true
+           detailVC.modalPresentationStyle = .fullScreen
+           present(detailVC, animated: true)
+           
+           if let sheet = detailVC.sheetPresentationController {
+               sheet.detents = [.medium(), .large()]
+               sheet.prefersGrabberVisible = true
+               sheet.preferredCornerRadius = 20
+           }
+       }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,6 +58,7 @@ class FavoritesViewController: UIViewController {
         view.addSubview(favoritesCityesTableView)
         getWeather()
         setupNotifications()
+        setupDaySelection()
 
         NSLayoutConstraint.activate([
             favoritesCityesTableView.topAnchor.constraint(equalTo: view.topAnchor),

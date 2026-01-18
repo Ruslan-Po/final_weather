@@ -3,6 +3,7 @@ import UIKit
 class FavotitesTableView: UIView {
     var favoriteCityes: [FavoriteCity] = []
     var tableTitle: String?
+    var onDaySelected: ((CachedWeather) -> Void)?
     
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
@@ -58,6 +59,10 @@ extension FavotitesTableView: UITableViewDelegate, UITableViewDataSource {
 
         let item = favoriteCityes[indexPath.row]
         cell.favoriteCellConfig(item: item)
+        
+        cell.onDaySelected = { [weak self] cachedWeather in
+                   self?.onDaySelected?(cachedWeather)
+               }
         return cell
     }
 }

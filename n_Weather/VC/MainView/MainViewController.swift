@@ -176,17 +176,18 @@ class MainViewController: UIViewController {
         NSLayoutConstraint.activate([
             
             cityLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Layout.smallPadding),
-            cityLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            cityLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.largePadding),
             
-            locationButton.leadingAnchor.constraint(equalTo: cityLabel.trailingAnchor, constant: Layout.smallPadding),
-            locationButton.bottomAnchor.constraint(equalTo: cityLabel.bottomAnchor),
-            locationButton.widthAnchor.constraint(equalToConstant: Layout.constansWidth),
-            locationButton.heightAnchor.constraint(equalToConstant: Layout.constansHeight),
-            
-            favoriteButton.leadingAnchor.constraint(equalTo: locationButton.trailingAnchor, constant: Layout.smallPadding),
+            favoriteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.mediumPadding),
             favoriteButton.bottomAnchor.constraint(equalTo: cityLabel.bottomAnchor),
             favoriteButton.widthAnchor.constraint(equalToConstant: Layout.constansWidth),
             favoriteButton.heightAnchor.constraint(equalToConstant: Layout.constansHeight),
+            
+            locationButton.trailingAnchor.constraint(equalTo: favoriteButton.leadingAnchor, constant: -Layout.extraSmallPadding),
+            locationButton.bottomAnchor.constraint(equalTo: cityLabel.bottomAnchor),
+            locationButton.widthAnchor.constraint(equalToConstant: Layout.constansWidth),
+            locationButton.heightAnchor.constraint(equalToConstant: Layout.constansHeight),
+    
             
             
             weatherImage.topAnchor.constraint(equalTo: cityLabel.bottomAnchor, constant: Layout.smallPadding),

@@ -14,12 +14,10 @@ class FavoritesViewPresenter: FavoritesViewPresenterProtocol {
         self.view = view
         self.dataCoreManager = dataCoreManager
     }
-    
+
     func loadSavedWeather() -> [FavoriteCity] {
         let cities = dataCoreManager.fetchAllFavorites()
         return cities
     }
-    
-
 }
 

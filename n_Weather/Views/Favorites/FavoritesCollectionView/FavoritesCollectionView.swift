@@ -3,17 +3,18 @@ import UIKit
 class FavoritesCollectionView: UIView {
     
     private var favoritesDays: [CachedWeather] = []
+    var onDaySelected: ((CachedWeather) -> Void)?
     
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
         layout.itemSize = CGSize(width: 70, height: 120)
         layout.minimumInteritemSpacing = 15
-        
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.backgroundColor = .clear
         cv.showsHorizontalScrollIndicator = false
         cv.delegate = self
+        cv.allowsSelection = true
         cv.dataSource = self
         cv.register(FavoritesDayCollectionCell.self, forCellWithReuseIdentifier: CellIdentifiers.favoriteCollectionViewCell)
         cv.translatesAutoresizingMaskIntoConstraints = false
@@ -69,4 +70,9 @@ extension FavoritesCollectionView: UICollectionViewDelegate, UICollectionViewDat
         cell.configure(date: date, temperature: temp, weatherCode: weatherCode)
         return cell
     }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+            let selectedDay = favoritesDays[indexPath.item]
+            onDaySelected?(selectedDay)
+        }
 }

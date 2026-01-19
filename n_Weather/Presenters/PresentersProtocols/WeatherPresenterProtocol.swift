@@ -8,6 +8,8 @@ protocol WeatherViewPresenterProtocol: AnyObject {
 
 protocol FavoritesViewPresenterProtocol: AnyObject {
     func loadSavedWeather() -> [FavoriteCity]
+    func refreshAllFavorites()
+    func removeAllFavorites()
 }
 
 protocol MainViewPresenterProtocol: WeatherViewPresenterProtocol {

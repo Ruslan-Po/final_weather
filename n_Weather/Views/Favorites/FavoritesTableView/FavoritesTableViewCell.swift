@@ -78,7 +78,8 @@ class FavoritesTableViewCell: UITableViewCell {
             tempLabel.trailingAnchor.constraint(equalTo: bgView.trailingAnchor, constant: -Layout.smallPadding),
             
             lastUpdatedLabel.topAnchor.constraint(equalTo: bgView.topAnchor, constant: Layout.smallPadding),
-            lastUpdatedLabel.trailingAnchor.constraint(equalTo: tempLabel.leadingAnchor, constant: -Layout.smallPadding),
+            lastUpdatedLabel.centerXAnchor.constraint(equalTo: bgView.centerXAnchor),
+            
             
             favoritesCollectionView.topAnchor.constraint(equalTo: cityNameLabel.bottomAnchor, constant: Layout.smallPadding),
             favoritesCollectionView.leadingAnchor.constraint(equalTo: bgView.leadingAnchor, constant: Layout.smallPadding),
@@ -102,7 +103,7 @@ class FavoritesTableViewCell: UITableViewCell {
                 filteredList.append(item)
             }
         }
-        return filteredList
+        return filteredList.reversed()
     }
     
     func favoriteCellConfig(item: FavoriteCity) {

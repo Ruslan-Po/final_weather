@@ -104,7 +104,7 @@ class MainViewController: UIViewController {
         imageView.contentMode = .scaleAspectFit
         imageView.isUserInteractionEnabled = true
         
-        let tap = UITapGestureRecognizer(target: self, action: #selector(updateFavorites))
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleFavoriteTap))
         imageView.addGestureRecognizer(tap)
         
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -140,7 +140,7 @@ class MainViewController: UIViewController {
         return label
     }()
     
-    @objc func updateFavorites(){
+    @objc func handleFavoriteTap(){
         if presenter.toggleCityFavoriteStatus(){
             presenter.removeCityFromFavorites()
         } else {presenter.saveCityToFavorites()}
@@ -171,6 +171,25 @@ class MainViewController: UIViewController {
         ])
         searchResultsTableView.register(UITableViewCell.self, forCellReuseIdentifier: CellIdentifiers.searchCell)
     }
+    
+    private func setupNotifications() {
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(handleFavoritesDidChange),
+                name: .favoritesDidChange,
+                object: nil
+            )
+        }
+    
+    @objc private func handleFavoritesDidChange() {
+           DispatchQueue.main.async { [weak self] in
+               self?.updateFavoriteButtonState()
+           }
+       }
+    
+    deinit {
+           NotificationCenter.default.removeObserver(self)
+       }
     
     func setupUI() {
         view.addSubview(weatherImage)
@@ -226,6 +245,7 @@ class MainViewController: UIViewController {
         setupUI()
         setupSearchResultsTableView()
         setupSearchBar()
+        setupNotifications()
     }
 }
 

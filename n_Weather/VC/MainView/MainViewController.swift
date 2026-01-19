@@ -131,31 +131,83 @@ class MainViewController: UIViewController {
         favoriteImageView.image = UIImage(systemName: imageName)
     }
     
+    private func updateLastUpdatedLabelVisibility() {
+        let isFavorite = presenter.toggleCityFavoriteStatus()
+        lastUpdatedLabel.isHidden = !isFavorite
+    }
+    
+    private func animateFavoriteButton() {
+        UIView.animate(
+            withDuration: 0.1,
+            animations: {
+                self.favoriteImageView.transform = CGAffineTransform(scaleX: 0.85, y: 0.85)
+            },
+            completion: { _ in
+                UIView.animate(
+                    withDuration: 0.2,
+                    delay: 0,
+                    usingSpringWithDamping: 0.5,
+                    initialSpringVelocity: 0.5,
+                    options: .curveEaseOut
+                ) {
+                    self.favoriteImageView.transform = .identity
+                }
+            }
+        )
+    }
+    
     lazy var lastUpdatedLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 12, weight: .light)
         label.textAlignment = .left
-
+        label.isHidden = true
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     @objc func handleFavoriteTap(){
+        animateFavoriteButton()
         if presenter.toggleCityFavoriteStatus(){
             presenter.removeCityFromFavorites()
         } else {presenter.saveCityToFavorites()}
     }
     
-    
     @objc func getUserLocation() {
+        UIView.animate(
+                withDuration: 0.1,
+                animations: {
+                    self.locationImageView.transform = CGAffineTransform(scaleX: 0.85, y: 0.85)
+                },
+                completion: { _ in
+                    UIView.animate(
+                        withDuration: 0.2,
+                        delay: 0,
+                        usingSpringWithDamping: 0.5,
+                        initialSpringVelocity: 0.5,
+                        options: .curveEaseOut
+                    ) {
+                        self.locationImageView.transform = .identity
+                    }
+                }
+            )
         presenter.fetchWeatherForCurrentLocation()
     }
     
     func setupSearchBar() {
         navigationItem.searchController = searchController
-        navigationItem.hidesSearchBarWhenScrolling = false
-        searchController.searchResultsUpdater = self
-        searchController.delegate = self
+            navigationItem.hidesSearchBarWhenScrolling = false
+            searchController.searchResultsUpdater = self
+            searchController.delegate = self
+            
+            let searchTextField = searchController.searchBar.searchTextField
+            searchTextField.backgroundColor = .white
+            searchTextField.textColor = .black
+            
+            // Добавь тень для контраста
+            searchTextField.layer.shadowColor = UIColor.black.cgColor
+            searchTextField.layer.shadowOffset = CGSize(width: 0, height: 1)
+            searchTextField.layer.shadowOpacity = 0.1
+            searchTextField.layer.shadowRadius = 2
     }
     
     private func setupSearchResultsTableView() {
@@ -252,10 +304,12 @@ class MainViewController: UIViewController {
 extension MainViewController: MainViewControllerProtocol {
     func showCityRemoved() {
         updateFavoriteButtonState()
+        updateLastUpdatedLabelVisibility()
     }
     
     func showCityAdded() {
         updateFavoriteButtonState()
+        updateLastUpdatedLabelVisibility()
     }
     
     func displayCitySearchResults(_ cities: [String]) {
@@ -277,6 +331,7 @@ extension MainViewController: MainViewControllerProtocol {
         lastUpdatedLabel.text = data.lastUpdated
         
         updateFavoriteButtonState()
+        updateLastUpdatedLabelVisibility()
     }
     
     func displayError(error: Error) {

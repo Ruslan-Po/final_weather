@@ -71,20 +71,20 @@ class FavoritesTableViewCell: UITableViewCell {
             bgView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.smallPadding),
             bgView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.smallPadding),
             
-            cityNameLabel.topAnchor.constraint(equalTo: bgView.topAnchor, constant: Layout.smallPadding),
+            cityNameLabel.topAnchor.constraint(equalTo: bgView.topAnchor, constant: Layout.mediumPadding),
             cityNameLabel.leadingAnchor.constraint(equalTo: bgView.leadingAnchor, constant: Layout.smallPadding),
             
-            tempLabel.topAnchor.constraint(equalTo: bgView.topAnchor, constant: Layout.smallPadding),
+            tempLabel.topAnchor.constraint(equalTo: bgView.topAnchor, constant: Layout.mediumPadding),
             tempLabel.trailingAnchor.constraint(equalTo: bgView.trailingAnchor, constant: -Layout.smallPadding),
             
             lastUpdatedLabel.topAnchor.constraint(equalTo: bgView.topAnchor, constant: Layout.smallPadding),
             lastUpdatedLabel.centerXAnchor.constraint(equalTo: bgView.centerXAnchor),
             
             
-            favoritesCollectionView.topAnchor.constraint(equalTo: cityNameLabel.bottomAnchor, constant: Layout.smallPadding),
+            favoritesCollectionView.topAnchor.constraint(equalTo: cityNameLabel.bottomAnchor, constant: Layout.extraSmallPadding),
             favoritesCollectionView.leadingAnchor.constraint(equalTo: bgView.leadingAnchor, constant: Layout.smallPadding),
             favoritesCollectionView.trailingAnchor.constraint(equalTo: bgView.trailingAnchor, constant: -Layout.smallPadding),
-            favoritesCollectionView.bottomAnchor.constraint(equalTo: bgView.bottomAnchor, constant: -Layout.smallPadding),
+            favoritesCollectionView.bottomAnchor.constraint(equalTo: bgView.bottomAnchor, constant: -Layout.extraSmallPadding),
             favoritesCollectionView.heightAnchor.constraint(equalToConstant: 120)
         ])
     }

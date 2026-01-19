@@ -4,6 +4,7 @@ class FavotitesTableView: UIView {
     var favoriteCityes: [FavoriteCity] = []
     var tableTitle: String?
     var onDaySelected: ((CachedWeather) -> Void)?
+    var onCityDeleted: ((String) -> Void)?
     
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
@@ -64,5 +65,23 @@ extension FavotitesTableView: UITableViewDelegate, UITableViewDataSource {
                    self?.onDaySelected?(cachedWeather)
                }
         return cell
+    }
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            let cityToDelete = favoriteCityes[indexPath.row]
+            
+            // Удаляем из массива
+            favoriteCityes.remove(at: indexPath.row)
+            
+            // Удаляем строку из таблицы с анимацией
+            tableView.deleteRows(at: [indexPath], with: .fade)
+            
+            // Уведомляем presenter об удалении
+            onCityDeleted?(cityToDelete.cityName)
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, titleForDeleteConfirmationButtonForRowAt indexPath: IndexPath) -> String? {
+        return "Delete"
     }
 }

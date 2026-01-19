@@ -4,6 +4,8 @@ import CoreData
 internal import _LocationEssentials
 
 class FavoritesViewPresenter: FavoritesViewPresenterProtocol {
+
+    
     weak var view: FavoritesViewControllerProtocol?
     let dataCoreManager: FavoritesStorageProtocol
     private let repository: WeatherRepositoryProtocol
@@ -73,6 +75,11 @@ class FavoritesViewPresenter: FavoritesViewPresenterProtocol {
         for city in allFavorites {
             dataCoreManager.deleteFavorite(byName: city.cityName)
         }
+    }
+    
+    func deleteCity(cityName: String) {
+        dataCoreManager.deleteFavorite(byName: cityName)
+        print("\(cityName)")
     }
 }
 

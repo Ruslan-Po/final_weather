@@ -9,7 +9,6 @@ class FavoritesViewController: UIViewController {
     var presenter: FavoritesViewPresenterProtocol!
     var favoriteCityes: [FavoriteCity] = []
     
-    // MARK: - UI Elements
     
     lazy var favoritesCityesTableView: FavotitesTableView = {
         let view = FavotitesTableView()
@@ -19,23 +18,27 @@ class FavoritesViewController: UIViewController {
     
     lazy var refreshAllButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Refresh All", for: .normal)
-        button.backgroundColor = .systemBackground
+        button.setTitle("Refresh", for: .normal)
+        button.backgroundColor = AppColors.background
         button.layer.cornerRadius = 8.0
-        button.setTitleColor(.systemBlue, for: .normal)
+        button.setTitleColor(.white, for: .normal)
         button.addTarget(self, action: #selector(refreshAllCities), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(buttonPressed(_:)), for: .touchDown)
+        button.addTarget(self, action: #selector(buttonReleased(_:)), for: [.touchUpInside, .touchUpOutside, .touchCancel])
         return button
     }()
     
     lazy var removeAllButton: UIButton = {
         let button = UIButton()
         button.setTitle("Remove All", for: .normal)
-        button.backgroundColor = .systemBackground
+        button.backgroundColor = AppColors.background
         button.layer.cornerRadius = 8.0
-        button.setTitleColor(.red, for: .normal)
+        button.setTitleColor(.white, for: .normal)
         button.addTarget(self, action: #selector(removeAllCities), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(buttonPressed(_:)), for: .touchDown)
+        button.addTarget(self, action: #selector(buttonReleased(_:)), for: [.touchUpInside, .touchUpOutside, .touchCancel])
         return button
     }()
     
@@ -48,7 +51,31 @@ class FavoritesViewController: UIViewController {
         return stack
     }()
     
-    // MARK: - Actions
+    @objc private func buttonPressed(_ sender: UIButton) {
+        UIView.animate(
+            withDuration: 0.15,
+            delay: 0,
+            options: .curveEaseInOut,
+            animations: {
+                sender.transform = CGAffineTransform(scaleX: 0.92, y: 0.92)
+                sender.alpha = 0.7
+            }
+        )
+    }
+    
+    @objc private func buttonReleased(_ sender: UIButton) {
+        UIView.animate(
+            withDuration: 0.15,
+            delay: 0,
+            usingSpringWithDamping: 0.5,
+            initialSpringVelocity: 0.5,
+            options: .curveEaseOut,
+            animations: {
+                sender.transform = .identity
+                sender.alpha = 1.0
+            }
+        )
+    }
     
     @objc private func refreshAllCities() {
         presenter.refreshAllFavorites()
@@ -60,7 +87,6 @@ class FavoritesViewController: UIViewController {
         NotificationCenter.default.post(name: .favoritesDidChange, object: nil)
     }
     
-    // MARK: - Setup Methods
     
     private func setupNotifications() {
         NotificationCenter.default.addObserver(
@@ -81,6 +107,14 @@ class FavoritesViewController: UIViewController {
         favoritesCityesTableView.onDaySelected = { [weak self] cachedWeather in
             self?.openDetailScreen(with: cachedWeather)
         }
+        favoritesCityesTableView.onCityDeleted = { [weak self] cityName in
+            self?.deleteCity(cityName: cityName)
+        }
+    }
+    
+    private func deleteCity(cityName: String) {
+        presenter.deleteCity(cityName: cityName)
+        NotificationCenter.default.post(name: .favoritesDidChange, object: nil)
     }
     
     private func openDetailScreen(with cachedWeather: CachedWeather) {
@@ -103,21 +137,17 @@ class FavoritesViewController: UIViewController {
         view.addSubview(buttonsStackView)
         
         NSLayoutConstraint.activate([
-            // TableView constraints
             favoritesCityesTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             favoritesCityesTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             favoritesCityesTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             favoritesCityesTableView.bottomAnchor.constraint(equalTo: buttonsStackView.topAnchor, constant: -Layout.mediumPadding),
             
-            // Buttons stack constraints
             buttonsStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.mediumPadding),
             buttonsStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.mediumPadding),
             buttonsStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -Layout.mediumPadding),
-            buttonsStackView.heightAnchor.constraint(equalToConstant: 50)
+            buttonsStackView.heightAnchor.constraint(equalToConstant: Layout.constansHeight)
         ])
     }
-    
-    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -131,8 +161,6 @@ class FavoritesViewController: UIViewController {
         NotificationCenter.default.removeObserver(self)
     }
 }
-
-// MARK: - FavoritesViewControllerProtocol
 
 extension FavoritesViewController: FavoritesViewControllerProtocol {
     func getWeather() {

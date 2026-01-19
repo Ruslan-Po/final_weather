@@ -50,7 +50,6 @@ final class MainViewPresenter: MainViewPresenterProtocol {
         )
     }
     
-    
      func createViewModel(from weather: WeatherModel) -> MainViewModel {
         guard let daydata = weather.list.first else {
             return createEmptyViewModel()

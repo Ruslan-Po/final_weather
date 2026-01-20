@@ -226,7 +226,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
                     self.favoritesStorage.saveFavoriteCity(from: weather)
                     self.updateFavoriteCityData(weather: weather)
                     NotificationCenter.default.post(name: .favoritesDidChange, object: nil)
-                    self.view?.showCityAdded()
+                    self.view?.updateFavoriteStatus()
                 case .failure(let error):
                     self.view?.displayError(error: error)
                 }
@@ -239,7 +239,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
         
         favoritesStorage.deleteFavorite(byName: lastLocation.cityName)
         NotificationCenter.default.post(name: .favoritesDidChange, object: nil)
-        view?.showCityRemoved()
+        view?.updateFavoriteStatus()
     }
     
     

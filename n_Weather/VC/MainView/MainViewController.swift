@@ -4,8 +4,7 @@ protocol MainViewControllerProtocol: AnyObject {
     func displayWeather(data: MainViewModel)
     func displayError(error: Error)
     func displayCitySearchResults(_ cities: [String])
-    func showCityAdded()
-    func showCityRemoved()
+    func updateFavoriteStatus()
 }
 
 class MainViewController: UIViewController {
@@ -303,15 +302,12 @@ class MainViewController: UIViewController {
 }
 
 extension MainViewController: MainViewControllerProtocol {
-    func showCityRemoved() {
+    func updateFavoriteStatus() {
         updateFavoriteButtonState()
         updateLastUpdatedLabelVisibility()
     }
     
-    func showCityAdded() {
-        updateFavoriteButtonState()
-        updateLastUpdatedLabelVisibility()
-    }
+
     
     func displayCitySearchResults(_ cities: [String]) {
         searchResults = cities

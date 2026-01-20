@@ -89,6 +89,9 @@ class FavoritesTableViewCell: UITableViewCell {
         ])
     }
     
+    func showLoadingState() {
+        lastUpdatedLabel.text = "Updating..."
+    }
     
     func filterCachedWeather(forecasts: [CachedWeather]) -> [CachedWeather] {
         var addedDays: Set<Date> = []
@@ -97,7 +100,7 @@ class FavoritesTableViewCell: UITableViewCell {
         let todayStart = calendar.startOfDay(for: Date())
         
         for item in forecasts.dropFirst() {
-            let date = Date(timeIntervalSince1970: TimeInterval(item.datetime))
+            let date = Date(timeIntervalSince1970: TimeInterval(item.dateTime))
             let dayStart = calendar.startOfDay(for: date)
             if dayStart != todayStart && addedDays.insert(dayStart).inserted {
                 filteredList.append(item)
@@ -117,7 +120,6 @@ class FavoritesTableViewCell: UITableViewCell {
         if let current = item.currentWeather {
             tempLabel.text = String(format: "%.0f°", current.temperature)
         }
-        
         
         let filteredForecasts = filterCachedWeather(forecasts: item.forecastArray)
         favoritesCollectionView.configure(with: filteredForecasts)

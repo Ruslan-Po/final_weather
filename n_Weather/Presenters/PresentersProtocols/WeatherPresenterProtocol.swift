@@ -43,5 +43,6 @@ protocol FavoritesStorageProtocol {
      func deleteFavorite(_ city: FavoriteCity)
      func deleteFavorite(byName cityName: String)
      func isFavorite(cityName: String) -> Bool
+     func saveContext()
 }
 

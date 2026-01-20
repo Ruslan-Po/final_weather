@@ -174,40 +174,41 @@ class MainViewController: UIViewController {
     
     @objc func getUserLocation() {
         UIView.animate(
-                withDuration: 0.1,
-                animations: {
-                    self.locationImageView.transform = CGAffineTransform(scaleX: 0.85, y: 0.85)
-                },
-                completion: { _ in
-                    UIView.animate(
-                        withDuration: 0.2,
-                        delay: 0,
-                        usingSpringWithDamping: 0.5,
-                        initialSpringVelocity: 0.5,
-                        options: .curveEaseOut
-                    ) {
-                        self.locationImageView.transform = .identity
-                    }
+            withDuration: 0.1,
+            animations: {
+                self.locationImageView.transform = CGAffineTransform(scaleX: 0.85, y: 0.85)
+            },
+            completion: { _ in
+                UIView.animate(
+                    withDuration: 0.2,
+                    delay: 0,
+                    usingSpringWithDamping: 0.5,
+                    initialSpringVelocity: 0.5,
+                    options: .curveEaseOut
+                ) {
+                    self.locationImageView.transform = .identity
                 }
-            )
+            }
+        )
         presenter.fetchWeatherForCurrentLocation()
     }
     
     func setupSearchBar() {
         navigationItem.searchController = searchController
-            navigationItem.hidesSearchBarWhenScrolling = false
-            searchController.searchResultsUpdater = self
-            searchController.delegate = self
-            
-            let searchTextField = searchController.searchBar.searchTextField
-            searchTextField.backgroundColor = .white
-            searchTextField.textColor = .black
-            
-            // Добавь тень для контраста
-            searchTextField.layer.shadowColor = UIColor.black.cgColor
-            searchTextField.layer.shadowOffset = CGSize(width: 0, height: 1)
-            searchTextField.layer.shadowOpacity = 0.1
-            searchTextField.layer.shadowRadius = 2
+        navigationItem.hidesSearchBarWhenScrolling = false
+        searchController.searchResultsUpdater = self
+        searchController.delegate = self
+        searchController.searchBar.tintColor = .black
+        
+        let searchTextField = searchController.searchBar.searchTextField
+        searchTextField.backgroundColor = .white
+        searchTextField.textColor = .black
+        
+        searchTextField.layer.shadowColor = UIColor.black.cgColor
+        searchTextField.layer.shadowOffset = CGSize(width: 0, height: 1)
+        searchTextField.layer.shadowOpacity = 0.1
+        searchTextField.layer.shadowRadius = 2
+        
     }
     
     private func setupSearchResultsTableView() {
@@ -225,23 +226,23 @@ class MainViewController: UIViewController {
     }
     
     private func setupNotifications() {
-            NotificationCenter.default.addObserver(
-                self,
-                selector: #selector(handleFavoritesDidChange),
-                name: .favoritesDidChange,
-                object: nil
-            )
-        }
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleFavoritesDidChange),
+            name: .favoritesDidChange,
+            object: nil
+        )
+    }
     
     @objc private func handleFavoritesDidChange() {
-           DispatchQueue.main.async { [weak self] in
-               self?.updateFavoriteButtonState()
-           }
-       }
+        DispatchQueue.main.async { [weak self] in
+            self?.updateFavoriteButtonState()
+        }
+    }
     
     deinit {
-           NotificationCenter.default.removeObserver(self)
-       }
+        NotificationCenter.default.removeObserver(self)
+    }
     
     func setupUI() {
         view.addSubview(weatherImage)
@@ -262,13 +263,13 @@ class MainViewController: UIViewController {
             
             favoriteImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.mediumPadding),
             favoriteImageView.centerYAnchor.constraint(equalTo: cityLabel.centerYAnchor),
-            favoriteImageView.widthAnchor.constraint(equalToConstant: Layout.constansWidth),
-            favoriteImageView.heightAnchor.constraint(equalToConstant: Layout.constansHeight),
+            favoriteImageView.widthAnchor.constraint(equalToConstant: Layout.constantWidth),
+            favoriteImageView.heightAnchor.constraint(equalToConstant: Layout.constantHeight),
             
             locationImageView.trailingAnchor.constraint(equalTo: favoriteImageView.leadingAnchor, constant: -Layout.extraSmallPadding),
             locationImageView.centerYAnchor.constraint(equalTo: cityLabel.centerYAnchor),
-            locationImageView.widthAnchor.constraint(equalToConstant: Layout.constansWidth),
-            locationImageView.heightAnchor.constraint(equalToConstant: Layout.constansHeight),
+            locationImageView.widthAnchor.constraint(equalToConstant: Layout.constantWidth),
+            locationImageView.heightAnchor.constraint(equalToConstant: Layout.constantHeight),
             
             
             weatherImage.topAnchor.constraint(equalTo: cityLabel.bottomAnchor, constant: Layout.smallPadding),

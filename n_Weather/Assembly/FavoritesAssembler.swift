@@ -1,7 +1,7 @@
 import UIKit
 
 class FavoritesAssembler {
-    static func maskeFavoritesViewController(container: AppContainer) -> UIViewController {
+    static func makeFavoritesViewController(container: AppContainer) -> UIViewController {
         let view = FavoritesViewController()
         
         let presenter = FavoritesViewPresenter(view: view,

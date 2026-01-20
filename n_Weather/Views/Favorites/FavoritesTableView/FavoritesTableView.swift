@@ -1,7 +1,7 @@
 import UIKit
 
-class FavotitesTableView: UIView {
-    var favoriteCityes: [FavoriteCity] = []
+class FavotiteTableView: UIView {
+    var favoriteCities: [FavoriteCity] = []
     var tableTitle: String?
     var onDaySelected: ((CachedWeather) -> Void)?
     var onCityDeleted: ((String) -> Void)?
@@ -39,15 +39,23 @@ class FavotitesTableView: UIView {
         ])
     }
     
-    public func displayFavoriteCitiesTable(favorites: [FavoriteCity]) {
-        self.favoriteCityes = favorites
+    public func displayFavoriteCitiesTable(favorite: [FavoriteCity]) {
+        self.favoriteCities = favorite
         tableView.reloadData()
+    }
+    
+    func showLoadingStateForAllCells() {
+        tableView.visibleCells.forEach { cell in
+            if let favoriteCell = cell as? FavoritesTableViewCell {
+                favoriteCell.showLoadingState()
+            }
+        }
     }
 }
 
-extension FavotitesTableView: UITableViewDelegate, UITableViewDataSource {
+extension FavotiteTableView: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return favoriteCityes.count
+        return favoriteCities.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -58,7 +66,7 @@ extension FavotitesTableView: UITableViewDelegate, UITableViewDataSource {
             return UITableViewCell()
         }
 
-        let item = favoriteCityes[indexPath.row]
+        let item = favoriteCities[indexPath.row]
         cell.favoriteCellConfig(item: item)
         
         cell.onDaySelected = { [weak self] cachedWeather in
@@ -68,15 +76,9 @@ extension FavotitesTableView: UITableViewDelegate, UITableViewDataSource {
     }
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            let cityToDelete = favoriteCityes[indexPath.row]
-            
-            // Удаляем из массива
-            favoriteCityes.remove(at: indexPath.row)
-            
-            // Удаляем строку из таблицы с анимацией
+            let cityToDelete = favoriteCities[indexPath.row]
+            favoriteCities.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .fade)
-            
-            // Уведомляем presenter об удалении
             onCityDeleted?(cityToDelete.cityName)
         }
     }

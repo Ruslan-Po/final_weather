@@ -19,7 +19,7 @@ extension CachedWeather {
     }
 
     @NSManaged public var dateString: String?
-    @NSManaged public var datetime: Int64
+    @NSManaged public var dateTime: Int64
     @NSManaged public var feelsLike: Double
     @NSManaged public var humidity: Int16
     @NSManaged public var pressure: Int16

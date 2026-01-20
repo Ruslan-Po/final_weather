@@ -27,44 +27,48 @@ class FavoritesViewPresenter: FavoritesViewPresenterProtocol {
     }
     
     func refreshAllFavorites() {
-           let favorites = dataCoreManager.fetchAllFavorites()
+        let favorites = dataCoreManager.fetchAllFavorites()
            
            guard !favorites.isEmpty else { return }
            
            let dispatchGroup = DispatchGroup()
            
            for city in favorites {
-               dispatchGroup.enter()
-               
-               locationService.getCoordinates(for: city.cityName) { [weak self] result in
-                   guard let self else {
-                       dispatchGroup.leave()
-                       return
-                   }
+                   dispatchGroup.enter()
                    
-                   if case .success(let coordinates) = result {
-                       self.repository.fetchCurrentWeather(
-                           lon: coordinates.longitude,
-                           lat: coordinates.latitude,
-                           forceRefresh: true
-                       ) { weatherResult in
-                           if case .success(let weather) = weatherResult {
-                               self.dataCoreManager.updateFavorite(
-                                   cityName: city.cityName,
-                                   with: weather
-                               )
+                   locationService.getCoordinates(for: city.cityName) { [weak self] result in
+                       guard let self else {
+                           dispatchGroup.leave()
+                           return
+                       }
+                       
+                       switch result {
+                       case .success(let coordinates):
+                           self.repository.fetchCurrentWeather(
+                               lon: coordinates.longitude,
+                               lat: coordinates.latitude,
+                               forceRefresh: true
+                           ) { weatherResult in
+                               switch weatherResult {
+                               case .success(let weather):
+                                   self.dataCoreManager.updateFavorite(
+                                    cityName: city.cityName,
+                                    with: weather
+                                   )
+                               case .failure(let error):
+                                   print("\(error)")}
+                               dispatchGroup.leave()
                            }
+                           
+                       case .failure(_):
                            dispatchGroup.leave()
                        }
-                   } else {
-                       dispatchGroup.leave()
                    }
-               }
            }
            
            dispatchGroup.notify(queue: .main) { [weak self] in
+               self?.dataCoreManager.saveContext()
                NotificationCenter.default.post(name: .favoritesDidChange, object: nil)
-               self?.view?.getWeather()
            }
        }
     

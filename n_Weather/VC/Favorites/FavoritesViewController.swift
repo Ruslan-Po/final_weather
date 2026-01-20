@@ -7,11 +7,11 @@ protocol FavoritesViewControllerProtocol: AnyObject {
 
 class FavoritesViewController: UIViewController {
     var presenter: FavoritesViewPresenterProtocol!
-    var favoriteCityes: [FavoriteCity] = []
+    var favoriteCities: [FavoriteCity] = []
     
     
-    lazy var favoritesCityesTableView: FavotitesTableView = {
-        let view = FavotitesTableView()
+    lazy var favoritesCityTableView: FavotiteTableView = {
+        let view = FavotiteTableView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -78,6 +78,7 @@ class FavoritesViewController: UIViewController {
     }
     
     @objc private func refreshAllCities() {
+        favoritesCityTableView.showLoadingStateForAllCells()
         presenter.refreshAllFavorites()
     }
     
@@ -98,16 +99,16 @@ class FavoritesViewController: UIViewController {
     }
     
     @objc private func handleFavoritesChange() {
-        DispatchQueue.main.async { [weak self] in
-            self?.getWeather()
-        }
+           DispatchQueue.main.async { [weak self] in
+               self?.getWeather()
+           }
     }
     
     private func setupDaySelection() {
-        favoritesCityesTableView.onDaySelected = { [weak self] cachedWeather in
+        favoritesCityTableView.onDaySelected = { [weak self] cachedWeather in
             self?.openDetailScreen(with: cachedWeather)
         }
-        favoritesCityesTableView.onCityDeleted = { [weak self] cityName in
+        favoritesCityTableView.onCityDeleted = { [weak self] cityName in
             self?.deleteCity(cityName: cityName)
         }
     }
@@ -133,19 +134,19 @@ class FavoritesViewController: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = .white
-        view.addSubview(favoritesCityesTableView)
+        view.addSubview(favoritesCityTableView)
         view.addSubview(buttonsStackView)
         
         NSLayoutConstraint.activate([
-            favoritesCityesTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            favoritesCityesTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            favoritesCityesTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            favoritesCityesTableView.bottomAnchor.constraint(equalTo: buttonsStackView.topAnchor, constant: -Layout.mediumPadding),
+            favoritesCityTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            favoritesCityTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            favoritesCityTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            favoritesCityTableView.bottomAnchor.constraint(equalTo: buttonsStackView.topAnchor, constant: -Layout.mediumPadding),
             
             buttonsStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.mediumPadding),
             buttonsStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.mediumPadding),
             buttonsStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -Layout.mediumPadding),
-            buttonsStackView.heightAnchor.constraint(equalToConstant: Layout.constansHeight)
+            buttonsStackView.heightAnchor.constraint(equalToConstant: Layout.constantHeight)
         ])
     }
     
@@ -164,7 +165,7 @@ class FavoritesViewController: UIViewController {
 
 extension FavoritesViewController: FavoritesViewControllerProtocol {
     func getWeather() {
-        favoriteCityes = presenter.loadSavedWeather()
-        favoritesCityesTableView.displayFavoriteCitiesTable(favorites: favoriteCityes)
+        favoriteCities = presenter.loadSavedWeather()
+        favoritesCityTableView.displayFavoriteCitiesTable(favorite: favoriteCities)
     }
 }

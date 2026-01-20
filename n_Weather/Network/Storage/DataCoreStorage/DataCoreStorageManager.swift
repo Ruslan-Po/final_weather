@@ -22,7 +22,7 @@ class DataCoreStorageManager: FavoritesStorageProtocol {
         persistentContainer.viewContext
     }
     
-    private func saveContext() {
+    internal func saveContext() {
         if context.hasChanges {
             do {
                 try context.save()
@@ -60,7 +60,7 @@ class DataCoreStorageManager: FavoritesStorageProtocol {
     private func createCachedWeather(from data: Forecast) -> CachedWeather {
         let cachedWeather = CachedWeather(context: context)
         
-        cachedWeather.datetime = Int64(data.datetime)
+        cachedWeather.dateTime = Int64(data.datetime)
         cachedWeather.dateString = data.date
         cachedWeather.temperature = data.main.temp
         cachedWeather.tempMin = data.main.tempMin

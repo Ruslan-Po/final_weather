@@ -15,7 +15,7 @@ class ForecastViewController: UIViewController {
         return view
     }()
     
-    @objc private func updateForecast(_: Notification) {
+    @objc private func updateForecast(_ notification: Notification) {
         presenter?.fetchUsingSavedLocation()
         tableViewTitle = presenter.getSavedCityName() ?? "Forecast"
     }
@@ -25,16 +25,20 @@ class ForecastViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemGray6
         subscribeToNotifications()
-        tableViewTitle = presenter.getSavedCityName() ?? "Forecast"
-        presenter?.fetchUsingSavedLocation()
 
         NSLayoutConstraint.activate([
             forecastTableView.topAnchor.constraint(equalTo: view.topAnchor),
             forecastTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             forecastTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             forecastTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-            ])
-        }
+        ])
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        tableViewTitle = presenter.getSavedCityName() ?? "Forecast"
+        presenter?.fetchUsingSavedLocation()
+    }
     
     private func subscribeToNotifications() {
         NotificationCenter.default.addObserver(
@@ -43,6 +47,10 @@ class ForecastViewController: UIViewController {
             name: .locationDidChange,
             object: nil
         )
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }
 

@@ -26,7 +26,6 @@ protocol LocationServiceProtocol {
 
 class LocationService: NSObject, LocationServiceProtocol {
     private let locationManager = CLLocationManager()
-    private let geocoder = CLGeocoder()
     private var locationCompletion: ((Result<CLLocationCoordinate2D, Error>) -> Void)?
     private let syncQueue = DispatchQueue(label: "syncQueue")
     private let completionQueue: DispatchQueue
@@ -65,6 +64,9 @@ class LocationService: NSObject, LocationServiceProtocol {
 
     func getCoordinates(for cityName: String, completion: @escaping (Result<CLLocationCoordinate2D, Error>) -> Void) {
         let normalizedName = normalizeCityName(cityName)
+        
+        let geocoder = CLGeocoder()
+        
         geocoder.geocodeAddressString(normalizedName) { [weak self] placemarks, error in
             guard let self = self else { return }
             self.completionQueue.async {
@@ -104,6 +106,8 @@ class LocationService: NSObject, LocationServiceProtocol {
     func getCityName(for coordinates: CLLocationCoordinate2D, completion: @escaping (Result<String, Error>) -> Void) {
         let location = CLLocation(latitude: coordinates.latitude, longitude: coordinates.longitude)
 
+        let geocoder = CLGeocoder()
+        
         geocoder.reverseGeocodeLocation(location) { [weak self] placemarks, error in
             guard let self = self else { return }
 

@@ -63,7 +63,7 @@ extension FavoritesCollectionView: UICollectionViewDelegate, UICollectionViewDat
         }
         
         let forecast = favoritesDays[indexPath.item]
-        let date = DateTimeHelper.formatDate(from: Int(forecast.datetime))
+        let date = DateTimeHelper.formatDate(from: Int(forecast.dateTime))
         let temp = String(format: "%.0f°", forecast.temperature)
         let weatherCode = Int(forecast.weatherId)
         

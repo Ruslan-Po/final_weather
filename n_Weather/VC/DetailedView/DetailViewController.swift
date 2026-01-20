@@ -17,8 +17,6 @@ class DetailViewController: UIViewController {
         return stackView
     }()
     
-    
-    
     private lazy var closeButton: UIButton = {
         let button = UIButton(type: .system)
         let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .medium)
@@ -63,7 +61,7 @@ class DetailViewController: UIViewController {
                                                        visibilityStackView])
         stackView.axis = .vertical
         stackView.distribution = .fillEqually
-        stackView.spacing = Layout.Spacing.medium
+        stackView.spacing = Layout.Spacing.small
         stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
@@ -111,7 +109,7 @@ class DetailViewController: UIViewController {
             closeButton.widthAnchor.constraint(equalToConstant: 30),
             closeButton.heightAnchor.constraint(equalToConstant: 30),
     
-            detailStackView.topAnchor.constraint(equalTo: closeButton.bottomAnchor, constant: Layout.mediumPadding),
+            detailStackView.topAnchor.constraint(equalTo: closeButton.bottomAnchor, constant: Layout.extraSmallPadding),
             detailStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.mediumPadding),
             detailStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.mediumPadding),
             detailStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor)

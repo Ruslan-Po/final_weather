@@ -1,9 +1,10 @@
 import UIKit
 
-class FavotitesTableView: UIView {
-    var favoriteCityes: [FavoriteCity] = []
+class FavotiteTableView: UIView {
+    var favoriteCities: [FavoriteCity] = []
     var tableTitle: String?
     var onDaySelected: ((CachedWeather) -> Void)?
+    var onCityDeleted: ((String) -> Void)?
     
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
@@ -38,15 +39,23 @@ class FavotitesTableView: UIView {
         ])
     }
     
-    public func displayFavoriteCitiesTable(favorites: [FavoriteCity]) {
-        self.favoriteCityes = favorites
+    public func displayFavoriteCitiesTable(favorite: [FavoriteCity]) {
+        self.favoriteCities = favorite
         tableView.reloadData()
+    }
+    
+    func showLoadingStateForAllCells() {
+        tableView.visibleCells.forEach { cell in
+            if let favoriteCell = cell as? FavoritesTableViewCell {
+                favoriteCell.showLoadingState()
+            }
+        }
     }
 }
 
-extension FavotitesTableView: UITableViewDelegate, UITableViewDataSource {
+extension FavotiteTableView: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return favoriteCityes.count
+        return favoriteCities.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -57,12 +66,24 @@ extension FavotitesTableView: UITableViewDelegate, UITableViewDataSource {
             return UITableViewCell()
         }
 
-        let item = favoriteCityes[indexPath.row]
+        let item = favoriteCities[indexPath.row]
         cell.favoriteCellConfig(item: item)
         
         cell.onDaySelected = { [weak self] cachedWeather in
                    self?.onDaySelected?(cachedWeather)
                }
         return cell
+    }
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            let cityToDelete = favoriteCities[indexPath.row]
+            favoriteCities.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .fade)
+            onCityDeleted?(cityToDelete.cityName)
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, titleForDeleteConfirmationButtonForRowAt indexPath: IndexPath) -> String? {
+        return "Delete"
     }
 }

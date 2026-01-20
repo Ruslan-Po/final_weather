@@ -71,23 +71,27 @@ class FavoritesTableViewCell: UITableViewCell {
             bgView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.smallPadding),
             bgView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.smallPadding),
             
-            cityNameLabel.topAnchor.constraint(equalTo: bgView.topAnchor, constant: Layout.smallPadding),
+            cityNameLabel.topAnchor.constraint(equalTo: bgView.topAnchor, constant: Layout.mediumPadding),
             cityNameLabel.leadingAnchor.constraint(equalTo: bgView.leadingAnchor, constant: Layout.smallPadding),
             
-            tempLabel.topAnchor.constraint(equalTo: bgView.topAnchor, constant: Layout.smallPadding),
+            tempLabel.topAnchor.constraint(equalTo: bgView.topAnchor, constant: Layout.mediumPadding),
             tempLabel.trailingAnchor.constraint(equalTo: bgView.trailingAnchor, constant: -Layout.smallPadding),
             
             lastUpdatedLabel.topAnchor.constraint(equalTo: bgView.topAnchor, constant: Layout.smallPadding),
-            lastUpdatedLabel.trailingAnchor.constraint(equalTo: tempLabel.leadingAnchor, constant: -Layout.smallPadding),
+            lastUpdatedLabel.centerXAnchor.constraint(equalTo: bgView.centerXAnchor),
             
-            favoritesCollectionView.topAnchor.constraint(equalTo: cityNameLabel.bottomAnchor, constant: Layout.smallPadding),
+            
+            favoritesCollectionView.topAnchor.constraint(equalTo: cityNameLabel.bottomAnchor, constant: Layout.extraSmallPadding),
             favoritesCollectionView.leadingAnchor.constraint(equalTo: bgView.leadingAnchor, constant: Layout.smallPadding),
             favoritesCollectionView.trailingAnchor.constraint(equalTo: bgView.trailingAnchor, constant: -Layout.smallPadding),
-            favoritesCollectionView.bottomAnchor.constraint(equalTo: bgView.bottomAnchor, constant: -Layout.smallPadding),
+            favoritesCollectionView.bottomAnchor.constraint(equalTo: bgView.bottomAnchor, constant: -Layout.extraSmallPadding),
             favoritesCollectionView.heightAnchor.constraint(equalToConstant: 120)
         ])
     }
     
+    func showLoadingState() {
+        lastUpdatedLabel.text = "Updating..."
+    }
     
     func filterCachedWeather(forecasts: [CachedWeather]) -> [CachedWeather] {
         var addedDays: Set<Date> = []
@@ -96,13 +100,13 @@ class FavoritesTableViewCell: UITableViewCell {
         let todayStart = calendar.startOfDay(for: Date())
         
         for item in forecasts.dropFirst() {
-            let date = Date(timeIntervalSince1970: TimeInterval(item.datetime))
+            let date = Date(timeIntervalSince1970: TimeInterval(item.dateTime))
             let dayStart = calendar.startOfDay(for: date)
             if dayStart != todayStart && addedDays.insert(dayStart).inserted {
                 filteredList.append(item)
             }
         }
-        return filteredList
+        return filteredList.reversed()
     }
     
     func favoriteCellConfig(item: FavoriteCity) {
@@ -116,7 +120,6 @@ class FavoritesTableViewCell: UITableViewCell {
         if let current = item.currentWeather {
             tempLabel.text = String(format: "%.0f°", current.temperature)
         }
-        
         
         let filteredForecasts = filterCachedWeather(forecasts: item.forecastArray)
         favoritesCollectionView.configure(with: filteredForecasts)

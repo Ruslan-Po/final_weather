@@ -29,6 +29,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
         self.favoritesStorage = favoritesStorage
        
         setupCitySearch()
+
     }
 
     private func setupCitySearch() {
@@ -37,16 +38,16 @@ final class MainViewPresenter: MainViewPresenterProtocol {
         }
     }
     
+    @objc private func favoritesListDidChange (notification: Notification) {
+        NotificationCenter.default.post(name: .favoritesDidChange, object: nil)
+    }
+    
     private func notifyLocationChanged(cityName: String) {
         NotificationCenter.default.post(
             name: .locationDidChange,
             object: nil,
             userInfo: ["cityName": cityName]
         )
-    }
-    
-    private func notyfyFavoritesUpdated() {
-        NotificationCenter.default.post(name: .favoritesDidChange, object: nil)
     }
     
      func createViewModel(from weather: WeatherModel) -> MainViewModel {
@@ -215,7 +216,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
     
     func saveCityToFavorites() {
         guard let lastLocation = locationStorage.get() else {return}
-        NotificationCenter.default.post(name: .favoritesDidChange, object: nil)
+        //NotificationCenter.default.post(name: .favoritesDidChange, object: nil)
         
         repository.fetchCurrentWeather(lon: lastLocation.lon, lat: lastLocation.lat, forceRefresh: false) { [weak self] result in
             guard let self else { return }
@@ -224,6 +225,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
                 case .success(let weather):
                     self.favoritesStorage.saveFavoriteCity(from: weather)
                     self.updateFavoriteCityData(weather: weather)
+                    NotificationCenter.default.post(name: .favoritesDidChange, object: nil)
                     self.view?.showCityAdded()
                 case .failure(let error):
                     self.view?.displayError(error: error)
@@ -252,6 +254,5 @@ final class MainViewPresenter: MainViewPresenterProtocol {
     
     func updateFavoriteCityData(weather: WeatherModel) {
         favoritesStorage.updateFavorite(cityName: currentCityName ?? "", with: weather)
-
     }
 }

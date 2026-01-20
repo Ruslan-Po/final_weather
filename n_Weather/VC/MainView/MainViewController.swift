@@ -104,7 +104,7 @@ class MainViewController: UIViewController {
         imageView.contentMode = .scaleAspectFit
         imageView.isUserInteractionEnabled = true
         
-        let tap = UITapGestureRecognizer(target: self, action: #selector(updateFavorites))
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleFavoriteTap))
         imageView.addGestureRecognizer(tap)
         
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -131,23 +131,65 @@ class MainViewController: UIViewController {
         favoriteImageView.image = UIImage(systemName: imageName)
     }
     
+    private func updateLastUpdatedLabelVisibility() {
+        let isFavorite = presenter.toggleCityFavoriteStatus()
+        lastUpdatedLabel.isHidden = !isFavorite
+    }
+    
+    private func animateFavoriteButton() {
+        UIView.animate(
+            withDuration: 0.1,
+            animations: {
+                self.favoriteImageView.transform = CGAffineTransform(scaleX: 0.85, y: 0.85)
+            },
+            completion: { _ in
+                UIView.animate(
+                    withDuration: 0.2,
+                    delay: 0,
+                    usingSpringWithDamping: 0.5,
+                    initialSpringVelocity: 0.5,
+                    options: .curveEaseOut
+                ) {
+                    self.favoriteImageView.transform = .identity
+                }
+            }
+        )
+    }
+    
     lazy var lastUpdatedLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 12, weight: .light)
         label.textAlignment = .left
-
+        label.isHidden = true
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
-    @objc func updateFavorites(){
+    @objc func handleFavoriteTap(){
+        animateFavoriteButton()
         if presenter.toggleCityFavoriteStatus(){
             presenter.removeCityFromFavorites()
         } else {presenter.saveCityToFavorites()}
     }
     
-    
     @objc func getUserLocation() {
+        UIView.animate(
+            withDuration: 0.1,
+            animations: {
+                self.locationImageView.transform = CGAffineTransform(scaleX: 0.85, y: 0.85)
+            },
+            completion: { _ in
+                UIView.animate(
+                    withDuration: 0.2,
+                    delay: 0,
+                    usingSpringWithDamping: 0.5,
+                    initialSpringVelocity: 0.5,
+                    options: .curveEaseOut
+                ) {
+                    self.locationImageView.transform = .identity
+                }
+            }
+        )
         presenter.fetchWeatherForCurrentLocation()
     }
     
@@ -156,6 +198,17 @@ class MainViewController: UIViewController {
         navigationItem.hidesSearchBarWhenScrolling = false
         searchController.searchResultsUpdater = self
         searchController.delegate = self
+        searchController.searchBar.tintColor = .black
+        
+        let searchTextField = searchController.searchBar.searchTextField
+        searchTextField.backgroundColor = .white
+        searchTextField.textColor = .black
+        
+        searchTextField.layer.shadowColor = UIColor.black.cgColor
+        searchTextField.layer.shadowOffset = CGSize(width: 0, height: 1)
+        searchTextField.layer.shadowOpacity = 0.1
+        searchTextField.layer.shadowRadius = 2
+        
     }
     
     private func setupSearchResultsTableView() {
@@ -170,6 +223,25 @@ class MainViewController: UIViewController {
             searchResultsTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         searchResultsTableView.register(UITableViewCell.self, forCellReuseIdentifier: CellIdentifiers.searchCell)
+    }
+    
+    private func setupNotifications() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleFavoritesDidChange),
+            name: .favoritesDidChange,
+            object: nil
+        )
+    }
+    
+    @objc private func handleFavoritesDidChange() {
+        DispatchQueue.main.async { [weak self] in
+            self?.updateFavoriteButtonState()
+        }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     func setupUI() {
@@ -191,13 +263,13 @@ class MainViewController: UIViewController {
             
             favoriteImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.mediumPadding),
             favoriteImageView.centerYAnchor.constraint(equalTo: cityLabel.centerYAnchor),
-            favoriteImageView.widthAnchor.constraint(equalToConstant: Layout.constansWidth),
-            favoriteImageView.heightAnchor.constraint(equalToConstant: Layout.constansHeight),
+            favoriteImageView.widthAnchor.constraint(equalToConstant: Layout.constantWidth),
+            favoriteImageView.heightAnchor.constraint(equalToConstant: Layout.constantHeight),
             
             locationImageView.trailingAnchor.constraint(equalTo: favoriteImageView.leadingAnchor, constant: -Layout.extraSmallPadding),
             locationImageView.centerYAnchor.constraint(equalTo: cityLabel.centerYAnchor),
-            locationImageView.widthAnchor.constraint(equalToConstant: Layout.constansWidth),
-            locationImageView.heightAnchor.constraint(equalToConstant: Layout.constansHeight),
+            locationImageView.widthAnchor.constraint(equalToConstant: Layout.constantWidth),
+            locationImageView.heightAnchor.constraint(equalToConstant: Layout.constantHeight),
             
             
             weatherImage.topAnchor.constraint(equalTo: cityLabel.bottomAnchor, constant: Layout.smallPadding),
@@ -226,16 +298,19 @@ class MainViewController: UIViewController {
         setupUI()
         setupSearchResultsTableView()
         setupSearchBar()
+        setupNotifications()
     }
 }
 
 extension MainViewController: MainViewControllerProtocol {
     func showCityRemoved() {
         updateFavoriteButtonState()
+        updateLastUpdatedLabelVisibility()
     }
     
     func showCityAdded() {
         updateFavoriteButtonState()
+        updateLastUpdatedLabelVisibility()
     }
     
     func displayCitySearchResults(_ cities: [String]) {
@@ -257,6 +332,7 @@ extension MainViewController: MainViewControllerProtocol {
         lastUpdatedLabel.text = data.lastUpdated
         
         updateFavoriteButtonState()
+        updateLastUpdatedLabelVisibility()
     }
     
     func displayError(error: Error) {

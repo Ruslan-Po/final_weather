@@ -8,6 +8,9 @@ protocol WeatherViewPresenterProtocol: AnyObject {
 
 protocol FavoritesViewPresenterProtocol: AnyObject {
     func loadSavedWeather() -> [FavoriteCity]
+    func refreshAllFavorites()
+    func removeAllFavorites()
+    func deleteCity(cityName: String)
 }
 
 protocol MainViewPresenterProtocol: WeatherViewPresenterProtocol {
@@ -40,5 +43,6 @@ protocol FavoritesStorageProtocol {
      func deleteFavorite(_ city: FavoriteCity)
      func deleteFavorite(byName cityName: String)
      func isFavorite(cityName: String) -> Bool
+     func saveContext()
 }
 

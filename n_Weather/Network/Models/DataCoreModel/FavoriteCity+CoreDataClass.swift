@@ -49,10 +49,9 @@ extension FavoriteCity: Identifiable {
 }
 
 extension FavoriteCity {
-    
     var forecastArray: [CachedWeather] {
         let set = forecast as? Set<CachedWeather> ?? []
-        return set.sorted { $0.datetime > $1.datetime }
+        return set.sorted { $0.dateTime > $1.dateTime }
     }
     var currentWeather: CachedWeather? {
         return forecastArray.first

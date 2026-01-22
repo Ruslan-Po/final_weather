@@ -1,42 +1,27 @@
-import Foundation
+import XCTest
 @testable import n_Weather
 
-final class MockLocationStorage: LocationStorageProtocol {
-    private var savedLocation: LastLocation?
-
-    var saveWasCalled = false
-    var saveCallCount = 0
-    var getWasCalled = false
-    var getCallCount = 0
-    var lastSavedLocation: LastLocation?
-
-    func save(_ location: LastLocation) {
-        saveWasCalled = true
-        saveCallCount += 1
-        lastSavedLocation = location
-        savedLocation = location
-    }
-
+class MockLocationStorage: LocationStorageProtocol {
+    
+    var locationToReturn: LastLocation? 
+    
+    var getCalled = false
+    var saveCalled = false
+    var clearCalled = false
+    
     func get() -> LastLocation? {
-        getWasCalled = true
-        getCallCount += 1
-        return savedLocation
+        getCalled = true
+        return locationToReturn
     }
-
-    func setSavedLocation(_ location: LastLocation) {
-        savedLocation = location
-    }
-
+    
     func clear() {
-        savedLocation = nil
+        clearCalled = true
+        locationToReturn = nil
     }
-
-    func reset() {
-        saveWasCalled = false
-        saveCallCount = 0
-        getWasCalled = false
-        getCallCount = 0
-        lastSavedLocation = nil
-        savedLocation = nil
+    
+    func save(_ location: LastLocation) {
+        saveCalled = true
+        locationToReturn = location
     }
+    
 }

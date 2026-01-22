@@ -14,7 +14,7 @@ final class WeatherServiceTests: XCTestCase {
         super.tearDown()
     }
 
-    func test_reateWeatherURL_withValidCoordinates_returnCorrectURL() {
+    func test_createWeatherURL_withValidCoordinates_returnCorrectURL() {
         let lon = 37.6173
         let lat = 55.7558
         let key = "test_api_key"

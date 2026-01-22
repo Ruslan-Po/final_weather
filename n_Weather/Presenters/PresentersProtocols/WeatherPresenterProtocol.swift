@@ -11,6 +11,7 @@ protocol FavoritesViewPresenterProtocol: AnyObject {
     func refreshAllFavorites()
     func removeAllFavorites()
     func deleteCity(cityName: String)
+    func createDetailViewModel(from cachedWeather: CachedWeather) -> DetailViewModel
 }
 
 protocol MainViewPresenterProtocol: WeatherViewPresenterProtocol {
@@ -29,20 +30,20 @@ protocol ForecastViewPresenterProtocol: WeatherViewPresenterProtocol {
     func getSavedCityName() -> String?
 }
 
-protocol DetailedViewPresetnerProtocol: WeatherViewPresenterProtocol {
+protocol DetailedViewPresenterProtocol: WeatherViewPresenterProtocol {
     func fetchUsingSavedLocation()
     func getSavedCityName() -> String?
 }
 
 protocol FavoritesStorageProtocol {
     func saveFavoriteCity(from weatherModel: WeatherModel)
-     func fetchAllFavorites() -> [FavoriteCity]
-     func findCity(byName name: String) -> FavoriteCity?
-     func findCity(byCoordinates lat: Double, lon: Double) -> FavoriteCity?
-     func updateFavorite(cityName: String, with weatherModel: WeatherModel)
-     func deleteFavorite(_ city: FavoriteCity)
-     func deleteFavorite(byName cityName: String)
-     func isFavorite(cityName: String) -> Bool
-     func saveContext()
+    func fetchAllFavorites() -> [FavoriteCity]
+    func findCity(byName name: String) -> FavoriteCity?
+    func findCity(byCoordinates lat: Double, lon: Double) -> FavoriteCity?
+    func updateFavorite(cityName: String, with weatherModel: WeatherModel)
+    func deleteFavorite(_ city: FavoriteCity)
+    func deleteFavorite(byName cityName: String)
+    func isFavorite(cityName: String) -> Bool
+    func saveContext()
 }
 

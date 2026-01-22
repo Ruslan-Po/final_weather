@@ -120,7 +120,7 @@ class FavoritesViewController: UIViewController {
     
     private func openDetailScreen(with cachedWeather: CachedWeather) {
         let detailVC = DetailViewController()
-        detailVC.cachedWeatherToShow = cachedWeather
+        detailVC.detailToShow = presenter.createDetailViewModel(from: cachedWeather)
         detailVC.showCloseButton = true
         detailVC.modalPresentationStyle = .fullScreen
         present(detailVC, animated: true)

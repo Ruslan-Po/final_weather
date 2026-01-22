@@ -1,14 +1,13 @@
 import UIKit
 
 protocol DetailedViewControllerProtocol: AnyObject {
-    func getWeatherDetail(_ detailedWeather: WeatherModel)
-    func getWeatherDetailFromCache(_ cachedWeather: CachedWeather)
+    func displayDetail(_ viewModel: DetailViewModel)
     func displayError(_ error: Error)
 }
 
 class DetailViewController: UIViewController {
     var presenter: DetailedViewPresenter!
-    var cachedWeatherToShow: CachedWeather?
+    var detailToShow: DetailViewModel?  // ← изменено
     var showCloseButton: Bool = false
     
     lazy var windStackView: WindView = {
@@ -75,11 +74,10 @@ class DetailViewController: UIViewController {
         setupUI()
         
         view.backgroundColor = .systemBackground
-        
         closeButton.isHidden = !showCloseButton
         
-        if let cached = cachedWeatherToShow {
-            getWeatherDetailFromCache(cached)
+        if let detail = detailToShow {
+            displayDetail(detail)
         } else {
             presenter?.fetchUsingSavedLocation()
             subscribeToNotifications()
@@ -97,12 +95,11 @@ class DetailViewController: UIViewController {
     
     @objc private func updateForecast() {
         presenter?.fetchUsingSavedLocation()
-        print("Update")
     }
     
-    func setupUI(){
+    func setupUI() {
         view.addSubview(detailStackView)
-        view.addSubview(closeButton) 
+        view.addSubview(closeButton)
         NSLayoutConstraint.activate([
             closeButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Layout.smallPadding),
             closeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.smallPadding),
@@ -116,52 +113,28 @@ class DetailViewController: UIViewController {
         ])
     }
 }
+
 extension DetailViewController: DetailedViewControllerProtocol {
     
-    func getWeatherDetail(_ detailedWeather: WeatherModel) {
-        let forecast = detailedWeather.list[0]
-        
+    func displayDetail(_ viewModel: DetailViewModel) {
         windStackView.config(
-            speed: "Speed: \(forecast.wind.speed) m/s",
-            deg: "Degrees: \(forecast.wind.deg)",
-            gust: "Gust \(forecast.wind.gust ?? 0) m/s"
+            speed: viewModel.windSpeed,
+            deg: viewModel.windDeg,
+            gust: viewModel.windGust
         )
         
         temperatureStackView.config(
-            feelsLike: "Feels like: \(forecast.main.feelsLike) С°",
-            max: "Max Temp: \(forecast.main.tempMax) С°",
-            min: "Min Temp: \(forecast.main.tempMin) С°"
+            feelsLike: viewModel.feelsLike,
+            max: viewModel.tempMax,
+            min: viewModel.tempMin
         )
         
-        humidityStackView.config(text: "Humidity: \(forecast.main.humidity) %")
-        pressureStackView.config(text: "Pressure: \(forecast.main.pressure) mb")
-        visibilityStackView.config(text: "Visibility: \(forecast.visibility ?? 10000) m")
-    }
-    
-    func getWeatherDetailFromCache(_ cachedWeather: CachedWeather) {
-        windStackView.config(
-            speed: "Speed: \(cachedWeather.windSpeed) m/s",
-            deg: "Degrees: \(cachedWeather.windDeg)",
-            gust: "Gust \(cachedWeather.windGust) m/s"
-        )
-        
-        temperatureStackView.config(
-            feelsLike: "Feels like: \(cachedWeather.feelsLike) С°",
-            max: "Max Temp: \(cachedWeather.tempMax) С°",
-            min: "Min Temp: \(cachedWeather.tempMin) С°"
-        )
-        
-        humidityStackView.config(text: "Humidity: \(cachedWeather.humidity) %")
-        pressureStackView.config(text: "Pressure: \(cachedWeather.pressure) mb")
-        visibilityStackView.config(text: "Visibility: \(cachedWeather.visibility) m")
+        humidityStackView.config(text: viewModel.humidity)
+        pressureStackView.config(text: viewModel.pressure)
+        visibilityStackView.config(text: viewModel.visibility)
     }
     
     func displayError(_ error: any Error) {
         print("\(error)")
     }
-    
 }
-
-
-
-

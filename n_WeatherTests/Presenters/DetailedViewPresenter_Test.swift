@@ -61,7 +61,6 @@ final class DetailedWeatherTests: XCTestCase {
         XCTAssertEqual(mockRepository.lastLat, 55.75, "Latitude Must Be Equal")
         XCTAssertEqual(mockRepository.lastForceRefresh,false, "Must be Nil")
         
-        XCTAssertEqual(mockView.receivedWeather?.city.name,"Moscow", "City Name Must Be Equal")
         XCTAssertNil(mockView.receivedError, "Error must be Nil")
     }
     

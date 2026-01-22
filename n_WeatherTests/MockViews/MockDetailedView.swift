@@ -2,6 +2,9 @@ import Foundation
 @testable import n_Weather
 
 class MockDetailedView: DetailedViewControllerProtocol {
+    func displayDetail(_ viewModel: DetailViewModel) {
+    }
+    
     var receivedWeather: WeatherModel?
     var receivedError: Error?
     var receivedCachedWeather: CachedWeather?

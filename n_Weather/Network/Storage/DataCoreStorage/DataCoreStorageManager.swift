@@ -79,8 +79,6 @@ class DataCoreStorageManager: FavoritesStorageProtocol {
         return cachedWeather
     }
     
-    // MARK: - Read
-    
     func fetchAllFavorites() -> [FavoriteCity] {
         let request = FavoriteCity.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "cachedAt", ascending: true)]
@@ -108,8 +106,6 @@ class DataCoreStorageManager: FavoritesStorageProtocol {
         return try? context.fetch(request).first
     }
     
-    // MARK: - Update
-    
     private func updateForecast(for city: FavoriteCity, with weatherModel: WeatherModel) {
         if let oldForecasts = city.forecast as? Set<CachedWeather> {
             oldForecasts.forEach { context.delete($0) }
@@ -132,8 +128,6 @@ class DataCoreStorageManager: FavoritesStorageProtocol {
         updateForecast(for: city, with: weatherModel)
     }
     
-    // MARK: - Delete
-    
     func deleteFavorite(_ city: FavoriteCity) {
         context.delete(city)
         saveContext()
@@ -149,8 +143,6 @@ class DataCoreStorageManager: FavoritesStorageProtocol {
         cities.forEach { context.delete($0) }
         saveContext()
     }
-    
-    // MARK: - Check
     
     func isFavorite(cityName: String) -> Bool {
         return findCity(byName: cityName) != nil

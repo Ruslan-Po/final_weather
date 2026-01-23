@@ -27,7 +27,6 @@ final class CitySearchService: NSObject, CitySearchServiceProtocol {
     }
 }
 
-// MARK: - MKLocalSearchCompleterDelegate
 extension CitySearchService: MKLocalSearchCompleterDelegate {
     
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
@@ -46,8 +45,6 @@ extension CitySearchService: MKLocalSearchCompleterDelegate {
     func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
         print("Completer error: \(error.localizedDescription)")
     }
-    
-    // MARK: - Private
     
     private func processResultsSequentially(
         results: [MKLocalSearchCompletion],

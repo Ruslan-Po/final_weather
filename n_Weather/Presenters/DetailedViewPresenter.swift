@@ -68,5 +68,4 @@ final class DetailedViewPresenter: DetailedViewPresenterProtocol {
                visibility: "Visibility: \(cached.visibility) m"
            )
        }
-
 }

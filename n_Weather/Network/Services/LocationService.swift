@@ -98,7 +98,7 @@ class LocationService: NSObject, LocationServiceProtocol {
     private func normalizeCityName(_ name: String) -> String {
         let replacements = [
             "Москва, Россия": "Moscow, Russia",
-            "Москва": "Moscow"
+            "Moscowscaya Oblast": "Москва"
         ]
         return replacements[name] ?? name
     }

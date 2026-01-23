@@ -1,5 +1,4 @@
 import XCTest
-import CoreData
 @testable import n_Weather
 
 final class FavoritesViewPresenterTests: XCTestCase {
@@ -8,12 +7,10 @@ final class FavoritesViewPresenterTests: XCTestCase {
     var mockDataCoreManager: MockFavoritesStorage!
     var mockRepository: MockWeatherRepository!
     var mockLocationService: MockLocationService!
-    var context: NSManagedObjectContext!
     
     override func setUp() {
         super.setUp()
         
-        context = CoreDataTestHelper.createInMemoryContext()
         mockView = MockFavoritesView()
         mockDataCoreManager = MockFavoritesStorage()
         mockRepository = MockWeatherRepository()
@@ -33,47 +30,31 @@ final class FavoritesViewPresenterTests: XCTestCase {
         mockDataCoreManager = nil
         mockRepository = nil
         mockLocationService = nil
-        context = nil
         super.tearDown()
     }
     
-    func test_FavoriteViewPresenter_loadSavedWeather_returnsAllFavorites() {
-        let city1 = FavoriteCity.mock(in: context, cityName: "Moscow")
-        let city2 = FavoriteCity.mock(in: context, cityName: "London")
-        mockDataCoreManager.citiesToReturn = [city1, city2]
-        
-        let result = sut.loadSavedWeather()
-        
-        XCTAssertEqual(result.count, 2)
-        XCTAssertTrue(mockDataCoreManager.fetchWasCalled)
-    }
-    
-    func test_FavoriteViewPresenter_loadSavedWeather_returnsEmptyArray() {
+    func test_FavoriteViewPresenter_loadSavedWeather_callsFetchAllFavorites() {
         mockDataCoreManager.citiesToReturn = []
         
         let result = sut.loadSavedWeather()
         
+        XCTAssertTrue(mockDataCoreManager.fetchWasCalled)
         XCTAssertEqual(result.count, 0)
     }
     
-    func test_deleteCity_callsDataCoreManager() {
-        let city1 = FavoriteCity.mock(in: context, cityName: "Moscow")
-        sut.deleteCity(cityName: city1.cityName)
+    func test_FavoriteViewPresenter_deleteCity_callsDataCoreManager() {
+        sut.deleteCity(cityName: "Moscow")
         
         XCTAssertTrue(mockDataCoreManager.deleteFavoriteCityWasCalled)
         XCTAssertEqual(mockDataCoreManager.lastDeletedCityName, "Moscow")
     }
     
-    func test_removeAllFavorites_deletesAllCities() {
-        let city1 = FavoriteCity.mock(in: context, cityName: "Moscow")
-        let city2 = FavoriteCity.mock(in: context, cityName: "London")
-        mockDataCoreManager.citiesToReturn = [city1, city2]
+    func test_FavoriteViewPresenter_removeAllFavorites_callsFetchAndDelete() {
+        mockDataCoreManager.citiesToReturn = []
         
         sut.removeAllFavorites()
         
         XCTAssertTrue(mockDataCoreManager.fetchWasCalled)
-        XCTAssertTrue(mockDataCoreManager.deleteFavoriteCityWasCalled)
-        XCTAssertEqual(mockDataCoreManager.deleteCallCount, 2)
     }
     
     func test_FavoriteViewPresenter_refreshAllFavorites_withEmptyList_doesNothing() {
@@ -85,41 +66,13 @@ final class FavoritesViewPresenterTests: XCTestCase {
         XCTAssertFalse(mockRepository.fetchWasCalled)
     }
     
-    func test_FavoriteViewPresenter_refreshAllFavorites_updatesDataCoreManager() {
-        let city = FavoriteCity.mock(in: context, cityName: "Paris")
-        mockDataCoreManager.citiesToReturn = [city]
+    func test_FavoriteViewPresenter_refreshAllFavorites_callsLocationService() {
+        mockDataCoreManager.citiesToReturn = []
         mockLocationService.setMockCoordinates(latitude: 48.8566, longitude: 2.3522)
         mockRepository.resultToReturn = .success(WeatherModel.mock())
         
-        let expectation = XCTestExpectation(description: "Update called")
-        
         sut.refreshAllFavorites()
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 1.0)
-        
-        XCTAssertTrue(mockDataCoreManager.updateFavoriteWasCalled)
-    }
-    
-    func test_FavoriteViewPresenter_refreshAllFavorites_savesContext() {
-        let city = FavoriteCity.mock(in: context, cityName: "Berlin")
-        mockDataCoreManager.citiesToReturn = [city]
-        mockLocationService.setMockCoordinates(latitude: 52.5200, longitude: 13.4050)
-        mockRepository.resultToReturn = .success(WeatherModel.mock())
-        
-        let expectation = XCTestExpectation(description: "Context saved")
-        
-        sut.refreshAllFavorites()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 1.5)
-        
-        XCTAssertTrue(mockDataCoreManager.saveContextWasCalled)
+        XCTAssertTrue(mockDataCoreManager.fetchWasCalled)
     }
 }

@@ -41,6 +41,6 @@ final class MockMainView: MainViewControllerProtocol {
     }
     
     func updateFavoriteStatus() {
-        //UPDATE
+        //
     }
 }

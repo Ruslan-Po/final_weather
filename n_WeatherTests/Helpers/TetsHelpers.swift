@@ -20,26 +20,3 @@ struct TestHelper {
         _ = XCTWaiter.wait(for: [expectation], timeout: seconds + 1.0)
     }
 }
-
-
-class CoreDataTestHelper {
-    static func createInMemoryContext() -> NSManagedObjectContext {
-        guard let modelURL = Bundle.main.url(forResource: "n_Weather", withExtension: "momd"),
-              let model = NSManagedObjectModel(contentsOf: modelURL) else {
-            fatalError("Unable to load Core Data model")
-        }
-        
-        let container = NSPersistentContainer(name: "n_Weather", managedObjectModel: model)
-        let description = NSPersistentStoreDescription()
-        description.type = NSInMemoryStoreType
-        container.persistentStoreDescriptions = [description]
-        
-        container.loadPersistentStores { _, error in
-            if let error = error {
-                fatalError("Failed to load in-memory store: \(error)")
-            }
-        }
-        
-        return container.viewContext
-    }
-}

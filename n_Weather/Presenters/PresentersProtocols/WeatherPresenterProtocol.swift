@@ -42,7 +42,7 @@ protocol FavoritesStorageProtocol {
     func findCity(byCoordinates lat: Double, lon: Double) -> FavoriteCity?
     func updateFavorite(cityName: String, with weatherModel: WeatherModel)
     func deleteFavorite(_ city: FavoriteCity)
-    func deleteFavorite(byName cityName: String)
+    func deleteFavoriteByCityName(byName cityName: String)
     func isFavorite(cityName: String) -> Bool
     func saveContext()
 }

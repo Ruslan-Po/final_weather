@@ -51,11 +51,11 @@ final class MainViewPresenter: MainViewPresenterProtocol {
     }
     
      func createViewModel(from weather: WeatherModel) -> MainViewModel {
-        guard let daydata = weather.list.first else {
+        guard let dayData = weather.list.first else {
             return createEmptyViewModel()
         }
-        let currentTemp = String(format: "%.0f °C", daydata.main.temp)
-        let weatherImage = ImagesByCodeHelper.getImageNameByCode(code: daydata.weather[0].id)
+        let currentTemp = String(format: "%.0f °C", dayData.main.temp)
+        let weatherImage = ImagesByCodeHelper.getImageNameByCode(code: dayData.weather[0].id)
         let sunrise = DateTimeHelper.formatTime(from: weather.city.sunrise)
         let sunset = DateTimeHelper.formatTime(from: weather.city.sunset)
         let cityName = weather.city.name
@@ -216,7 +216,6 @@ final class MainViewPresenter: MainViewPresenterProtocol {
     
     func saveCityToFavorites() {
         guard let lastLocation = locationStorage.get() else {return}
-        //NotificationCenter.default.post(name: .favoritesDidChange, object: nil)
         
         repository.fetchCurrentWeather(lon: lastLocation.lon, lat: lastLocation.lat, forceRefresh: false) { [weak self] result in
             guard let self else { return }
@@ -237,7 +236,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
     func removeCityFromFavorites() {
         guard let lastLocation = locationStorage.get() else { return }
         
-        favoritesStorage.deleteFavorite(byName: lastLocation.cityName)
+        favoritesStorage.deleteFavoriteByCityName(byName: lastLocation.cityName)
         NotificationCenter.default.post(name: .favoritesDidChange, object: nil)
         view?.updateFavoriteStatus()
     }

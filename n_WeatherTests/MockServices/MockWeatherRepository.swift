@@ -22,6 +22,4 @@ class MockWeatherRepository: WeatherRepositoryProtocol{
             completion(resultToReturn)
         }
     }
-    
-    
 }

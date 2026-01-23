@@ -1,15 +1,19 @@
 import XCTest
+import CoreData
 @testable import n_Weather
 
 class MockFavoritesStorage: FavoritesStorageProtocol {
 
-    
-    var saveWasCalled = false
-    var deleteWasCalled = false
-    var fetchWasCalled = false
-    var findWasCalled = false
-    var isFavoriteWasCalled = false
+    var saveFavoriteCityWasCalled = false
+    var findCityWasCalled = false
+    var checkIsFavoriteWasCalled = false
     var updateFavoriteWasCalled = false
+    var fetchWasCalled = false
+    var findByCoordinatesWasCalled = false
+    var deleteFavoriteObjectWasCalled = false
+    var deleteFavoriteCityWasCalled = false
+    var saveContextWasCalled = false
+    var deleteCallCount = 0
     
     var lastSavedWeatherModel: WeatherModel?
     var lastDeletedCityName: String?
@@ -17,34 +21,28 @@ class MockFavoritesStorage: FavoritesStorageProtocol {
     var lastIsFavoriteCityName: String?
     var lastUpdateFavoriteCityName: String?
     var lastUpdateFavoriteWeatherModel: WeatherModel?
+    var lastDeletedCity: FavoriteCity?
+    var lastFindCoordinatesLat: Double?
+    var lastFindCoordinatesLon: Double?
     
     var citiesToReturn: [FavoriteCity] = []
     var cityToReturn: FavoriteCity?
+    var cityByCoordinatesToReturn: FavoriteCity?
     var isFavoriteResult: Bool = false
     
     func saveFavoriteCity(from weatherModel: WeatherModel) {
-        saveWasCalled = true
+        saveFavoriteCityWasCalled = true
         lastSavedWeatherModel = weatherModel
     }
     
-    func deleteFavoriteCity(cityName: String) {
-        deleteWasCalled = true
-        lastDeletedCityName = cityName
-    }
-    
-    func fetchAllFavoriteCities() -> [FavoriteCity] {
-        fetchWasCalled = true
-        return citiesToReturn
-    }
-    
     func findCity(byName name: String) -> FavoriteCity? {
-        findWasCalled = true
+        findCityWasCalled = true
         lastFindCityName = name
         return cityToReturn
     }
     
     func isFavorite(cityName: String) -> Bool {
-        isFavoriteWasCalled = true
+        checkIsFavoriteWasCalled = true
         lastIsFavoriteCityName = cityName
         return isFavoriteResult
     }
@@ -56,23 +54,30 @@ class MockFavoritesStorage: FavoritesStorageProtocol {
     }
     
     func fetchAllFavorites() -> [FavoriteCity] {
-        return []
+        fetchWasCalled = true
+        return citiesToReturn
     }
     
     func findCity(byCoordinates lat: Double, lon: Double) -> FavoriteCity? {
-        return nil
+        findByCoordinatesWasCalled = true
+        lastFindCoordinatesLat = lat
+        lastFindCoordinatesLon = lon
+        return cityByCoordinatesToReturn
     }
     
     func deleteFavorite(_ city: FavoriteCity) {
-        
+        deleteFavoriteObjectWasCalled = true
+        lastDeletedCity = city
+        deleteCallCount += 1
     }
     
-    func deleteFavorite(byName cityName: String) {
-        
+    func deleteFavoriteByCityName(byName cityName: String) {
+        deleteFavoriteCityWasCalled = true
+        lastDeletedCityName = cityName
+        deleteCallCount += 1
     }
     
     func saveContext() {
-        
+        saveContextWasCalled = true
     }
 }
-

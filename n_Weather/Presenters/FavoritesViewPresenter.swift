@@ -92,12 +92,11 @@ class FavoritesViewPresenter: FavoritesViewPresenterProtocol {
         let allFavorites = dataCoreManager.fetchAllFavorites()
         NotificationCenter.default.post(name: .updateFromFavoritesScreen, object: nil)
         for city in allFavorites {
-            dataCoreManager.deleteFavorite(byName: city.cityName)
+            dataCoreManager.deleteFavoriteByCityName(byName: city.cityName)
         }
     }
     
     func deleteCity(cityName: String) {
-        dataCoreManager.deleteFavorite(byName: cityName)
-        print("\(cityName)")
+        dataCoreManager.deleteFavoriteByCityName(byName: cityName)
     }
 }

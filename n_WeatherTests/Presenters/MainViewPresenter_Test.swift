@@ -63,6 +63,16 @@ final class MainViewPresenterTests: XCTestCase {
     }
     
     
+    func test_MainViewPresenter_createViewModel_callsView() {
+        let weatherModel = WeatherModel.mock()
+        mockRepository.resultToReturn = .success(weatherModel)
+        
+        let viewModel = sut.createViewModel(from: weatherModel)
+        
+        XCTAssertNotNil(viewModel, "View model was created")
+        XCTAssertEqual(viewModel.cityName, weatherModel.city.name, "City's is equal")
+    }
+    
     
 }
 

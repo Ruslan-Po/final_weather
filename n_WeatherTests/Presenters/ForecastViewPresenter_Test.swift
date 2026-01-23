@@ -1,81 +1,109 @@
-//import XCTest
-//@testable import n_Weather
-//
-//final class ForecastViewPresenterTests: XCTestCase {
-//    var sut: ForecastViewPresenter!
-//    var mockView: MockForecastView!
-//    var mockClient: MockWeatherClient!
-//    var mockLocationStorage: MockLocationStorage!
-//
-//    override func setUp() {
-//        super.setUp()
-//        mockView = MockForecastView()
-//        mockClient = MockWeatherClient()
-//        mockLocationStorage = MockLocationStorage()
-//
-//        sut = ForecastViewPresenter(
-//            view: mockView,
-//            client: mockClient,
-//            locationStorage: mockLocationStorage
-//        )
-//    }
-//
-//    override func tearDown() {
-//        sut = nil
-//        mockView = nil
-//        mockClient = nil
-//        mockLocationStorage = nil
-//        super.tearDown()
-//    }
-//
-//    func test_filter_removesTodayAndDuplicateDays() {
-//        let today = Date()
-//        let calendar = Calendar.current
-//
-//        let todayTimestamp = Int(today.timeIntervalSince1970)
-//        let tomorrow = calendar.date(byAdding: .day, value: 1, to: today)!
-//        let tomorrowTimestamp = Int(tomorrow.timeIntervalSince1970)
-//        let tomorrowEvening = calendar.date(byAdding: .hour, value: 6, to: tomorrow)!
-//        let tomorrowEveningTimestamp = Int(tomorrowEvening.timeIntervalSince1970)
-//        let dayAfter = calendar.date(byAdding: .day, value: 2, to: today)!
-//        let dayAfterTimestamp = Int(dayAfter.timeIntervalSince1970)
-//
-//        let forecasts = [
-//            Forecast.mock(datetime: todayTimestamp),           // today must be skipped
-//            Forecast.mock(datetime: tomorrowTimestamp),        // tommorow must stay
-//            Forecast.mock(datetime: tomorrowEveningTimestamp), // tommorow evening (duble or skip)
-//            Forecast.mock(datetime: dayAfterTimestamp)         // day after tommorow
-//        ]
-//
-//        let weatherModel = WeatherModel.mock(list: forecasts)
-//
-//        let filtered = sut.filter(weatherModel: weatherModel)
-//
-//        XCTAssertEqual(filtered.count, 2, "Should have 2 forecasts (tomorrow and day after)")
-//        XCTAssertEqual(filtered[0].datetime, tomorrowTimestamp, "First should be tomorrow")
-//        XCTAssertEqual(filtered[1].datetime, dayAfterTimestamp, "Second should be day after tomorrow")
-//    }
-//
-//    func test_getSavedCityName_withSavedLocation_returnsCityName() {
-//        let savedLocation = LastLocation(
-//            lon: 37.6173,
-//            lat: 55.7558,
-//            cityName: "Moscow",
-//            updatedAt: Date()
-//        )
-//        mockLocationStorage.setSavedLocation(savedLocation)
-//
-//        let cityName = sut.getSavedCityName()
-//
-//        XCTAssertEqual(cityName, "Moscow")
-//        XCTAssertTrue(mockLocationStorage.getWasCalled)
-//    }
-//
-//    func test_fetchUsingSavedLocation_withoutSavedLocation_displaysError() {
-//        sut.fetchUsingSavedLocation()
-//
-//        XCTAssertTrue(mockLocationStorage.getWasCalled)
-//        XCTAssertTrue(mockView.displayErrorWasCalled)
-//        XCTAssertFalse(mockClient.fetchWasCalled, "Should not fetch without saved location")
-//    }
-//}
+import XCTest
+@testable import n_Weather
+
+final class ForecastViewPresenterTests: XCTestCase {
+    var sut: ForecastViewPresenter!
+    var mockView: MockForecastView!
+    var mockRepository: MockWeatherRepository!
+    var mockLocationStorage: MockLocationStorage!
+
+    override func setUp() {
+        super.setUp()
+        mockView = MockForecastView()
+        mockRepository = MockWeatherRepository()
+        mockLocationStorage = MockLocationStorage()
+
+        sut = ForecastViewPresenter(
+            view: mockView,
+            repository: mockRepository,
+            locationStorage: mockLocationStorage
+        )
+    }
+
+    override func tearDown() {
+        sut = nil
+        mockView = nil
+        mockRepository = nil
+        mockLocationStorage = nil
+        super.tearDown()
+    }
+    
+    func test_ForecastViewPresenter_getSavedCityName_returnCity() {
+        let locationToReturn = LastLocation.mock()
+        mockLocationStorage.save(locationToReturn)
+        
+        let result = sut.getSavedCityName()
+        
+        XCTAssertEqual(locationToReturn.cityName, result)
+    }
+    
+    func test_ForecastViewPresenter_fetchWeatherByCoordinates_callsRepository() {
+        sut.fetchWeatherByCoordinates(lon: 10, lat: 20)
+        
+        XCTAssertTrue(mockRepository.fetchWasCalled)
+    }
+    
+    func test_ForecastViewPresenter_fetchWeatherByCoordinates_savesLocation() {
+        
+        let lon = 37.6173
+        let lat = 55.7558
+        let cityName = "Moscow"
+        
+        let weatherModel = WeatherModel.mock(
+            city: City.mock(name: cityName)
+        )
+        mockRepository.resultToReturn = .success(weatherModel)
+        
+        sut.fetchWeatherByCoordinates(lon: lon, lat: lat)
+        
+        XCTAssertTrue(mockLocationStorage.saveCalled, "Location was saved")
+        XCTAssertEqual(mockLocationStorage.locationToReturn?.lon, lon)
+        XCTAssertEqual(mockLocationStorage.locationToReturn?.lat, lat)
+        XCTAssertEqual(mockLocationStorage.locationToReturn?.cityName, cityName)
+        XCTAssertNotNil(mockLocationStorage.locationToReturn?.updatedAt, "Must be updated")
+    }
+        
+    func test_ForecastViewPresenter_filter_returnFilteredForecast() {
+        let day1 = Date(timeIntervalSince1970: 1704067200)
+        let day2 = Date(timeIntervalSince1970: 1704153600)
+        let day2_plus3h = Date(timeIntervalSince1970: 1704164400)
+        let day3 = Date(timeIntervalSince1970: 1704240000)
+        
+        let weatherModel = WeatherModel.mock(
+            list: [
+                Forecast.mock(datetime: Int(day1.timeIntervalSince1970)),
+                Forecast.mock(datetime: Int(day2.timeIntervalSince1970)),
+                Forecast.mock(datetime: Int(day2_plus3h.timeIntervalSince1970)),
+                Forecast.mock(datetime: Int(day3.timeIntervalSince1970))
+            ]
+        )
+        
+        let filteredList = sut.filter(weatherModel: weatherModel)
+        
+        XCTAssertEqual(filteredList.count, 2, "Must be two forecast")
+        XCTAssertEqual(filteredList[0].datetime, Int(day2.timeIntervalSince1970), "TimeStamp is equal")
+        XCTAssertEqual(filteredList[1].datetime, Int(day3.timeIntervalSince1970), "TimeStamp is equal")
+    }
+    
+    func test_ForecastViewPresenter_filter_returnEmptyList(){
+        let weatherModel = WeatherModel.mock(
+            list: [
+                Forecast.mock(datetime: 1704067200)
+            ]
+        )
+        let filteredList = sut.filter(weatherModel: weatherModel)
+            
+            XCTAssertEqual(filteredList.count, 0, "Empty after dropFirst()")
+    }
+    
+    func test_fetchWeatherByCoordinates_onFailure_callsDisplayError() {
+
+           let testError = NSError(domain: "TestError", code: 404, userInfo: nil)
+           mockRepository.resultToReturn = .failure(testError)
+           
+           sut.fetchWeatherByCoordinates(lon: 0, lat: 0)
+           
+           XCTAssertTrue(mockView.displayErrorWasCalled, "View must catch error")
+           XCTAssertNotNil(mockView.receivedError, "Error must be not Nil")
+       }
+}

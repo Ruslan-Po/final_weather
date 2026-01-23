@@ -3,38 +3,20 @@ import Foundation
 
 final class MockForecastView: ForecastViewControllerProtocol {
 
-    var getForecastWasCalled = false
-    var getForecastCallCount = 0
+    var receivedWeather: [Forecast] = []
+    var receivedError: Error?
+    
+    var getWeatherWasCalled = false
     var displayErrorWasCalled = false
-    var displayErrorCallCount = 0
-
-    var receivedForecasts: [Forecast]?
-    var displayedError: Error?
-    var allReceivedForecasts: [[Forecast]] = []
-    var allDisplayedErrors: [Error] = []
-
-    func getForecast(_ forecasts: [Forecast]) {
-        getForecastWasCalled = true
-        getForecastCallCount += 1
-        receivedForecasts = forecasts
-        allReceivedForecasts.append(forecasts)
+    
+ 
+    func getForecast(_ forecast: [Forecast]) {
+        getWeatherWasCalled = true
+        receivedWeather = forecast
     }
-
+    
     func displayError(_ error: Error) {
         displayErrorWasCalled = true
-        displayErrorCallCount += 1
-        displayedError = error
-        allDisplayedErrors.append(error)
-    }
-
-    func reset() {
-        getForecastWasCalled = false
-        getForecastCallCount = 0
-        displayErrorWasCalled = false
-        displayErrorCallCount = 0
-        receivedForecasts = nil
-        displayedError = nil
-        allReceivedForecasts.removeAll()
-        allDisplayedErrors.removeAll()
+        receivedError = error
     }
 }

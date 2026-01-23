@@ -139,7 +139,7 @@ class DataCoreStorageManager: FavoritesStorageProtocol {
         saveContext()
     }
     
-    func deleteFavorite(byName cityName: String) {
+    func deleteFavoriteByCityName(byName cityName: String) {
         guard let city = findCity(byName: cityName) else { return }
         deleteFavorite(city)
     }

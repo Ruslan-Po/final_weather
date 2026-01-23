@@ -2,11 +2,9 @@ import Foundation
 import CoreData
 
 class DataCoreStorageManager: FavoritesStorageProtocol {
-    
     private init() {}
     static let shared = DataCoreStorageManager()
     
-    // MARK: - Core Data Stack
     
     private lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "n_Weather")
@@ -33,7 +31,6 @@ class DataCoreStorageManager: FavoritesStorageProtocol {
         }
     }
     
-    // MARK: - Create
     
     func saveFavoriteCity(from weatherModel: WeatherModel) {
         if let existingCity = findCity(byName: weatherModel.city.name) {
@@ -142,7 +139,7 @@ class DataCoreStorageManager: FavoritesStorageProtocol {
         saveContext()
     }
     
-    func deleteFavorite(byName cityName: String) {
+    func deleteFavoriteByCityName(byName cityName: String) {
         guard let city = findCity(byName: cityName) else { return }
         deleteFavorite(city)
     }

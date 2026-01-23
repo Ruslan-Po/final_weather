@@ -1,4 +1,5 @@
 import Foundation
+import CoreData
 import XCTest
 @testable import n_Weather
 

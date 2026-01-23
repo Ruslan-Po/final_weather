@@ -21,7 +21,9 @@ extension Forecast {
         datetime: Int = 1764759478,
         date: String = "2025-12-03 10:57:49",
         main: Main = .mock(),
-        weather: [Weather] = [.mock()]
+        weather: [Weather] = [.mock()],
+        wind: Wind = .mock(),
+        visibility: Int = 10000
     ) -> Forecast {
         let jsonString = """
                     {
@@ -46,7 +48,7 @@ extension Forecast {
 
         _ = Data(jsonString.utf8)
 
-        return Forecast(datetime: datetime, date: date, main: main, weather: weather)
+        return Forecast(datetime: datetime, date: date, main: main, weather: weather, wind: wind, visibility: visibility)
     }
 }
 
@@ -81,13 +83,15 @@ extension Main {
         tempMin: Double = 28.15,
         tempMax: Double = 30.15,
         humidity: Int = 60,
-        feelsLike: Double = 28.2
+        feelsLike: Double = 28.2,
+        pressure: Int = 1013
     ) -> Main {
         return Main(
             temp: temp,
             tempMin: tempMin,
             tempMax: tempMax,
             humidity: humidity,
+            pressure: pressure,
             feelsLike: feelsLike
         )
     }
@@ -106,3 +110,17 @@ extension Weather {
         )
     }
 }
+extension Wind {
+    static func mock(
+        speed: Double = 5.0,
+        deg: Int = 180,
+        gust: Double = 0.0
+    ) -> Wind {
+        return Wind(
+            speed: speed,
+            deg: deg,
+            gust: gust
+        )
+    }
+}
+

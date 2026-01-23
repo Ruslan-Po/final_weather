@@ -2,10 +2,12 @@ import Foundation
 @testable import n_Weather
 
 final class MockMainView: MainViewControllerProtocol {
+
+    
     var displayWeatherWasCalled = false
-    var displayWeatherCallCount = 0
     var displayErrorWasCalled = false
-    var displayErrorCallCount = 0
+    
+    var displayCitySearchResultWasCalled = false
 
     var displayedWeatherData: MainViewModel?
     var displayedError: Error?
@@ -14,26 +16,31 @@ final class MockMainView: MainViewControllerProtocol {
 
     func displayWeather(data: MainViewModel) {
         displayWeatherWasCalled = true
-        displayWeatherCallCount += 1
         displayedWeatherData = data
         allDisplayedWeatherData.append(data)
     }
 
     func displayError(error: Error) {
         displayErrorWasCalled = true
-        displayErrorCallCount += 1
         displayedError = error
         allDisplayedErrors.append(error)
     }
 
     func reset() {
         displayWeatherWasCalled = false
-        displayWeatherCallCount = 0
         displayErrorWasCalled = false
-        displayErrorCallCount = 0
         displayedWeatherData = nil
+        displayCitySearchResultWasCalled = false
         displayedError = nil
         allDisplayedWeatherData.removeAll()
         allDisplayedErrors.removeAll()
+    }
+    
+    func displayCitySearchResults(_ cities: [String]) {
+        displayCitySearchResultWasCalled = true
+    }
+    
+    func updateFavoriteStatus() {
+        //
     }
 }

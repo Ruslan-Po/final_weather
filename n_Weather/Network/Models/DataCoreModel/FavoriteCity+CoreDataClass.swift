@@ -27,7 +27,6 @@ extension FavoriteCity {
 
 }
 
-// MARK: Generated accessors for forecast
 extension FavoriteCity {
 
     @objc(addForecastObject:)
@@ -41,7 +40,6 @@ extension FavoriteCity {
 
     @objc(removeForecast:)
     @NSManaged public func removeFromForecast(_ values: NSSet)
-
 }
 
 extension FavoriteCity: Identifiable {

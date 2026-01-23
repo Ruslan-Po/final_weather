@@ -1,0 +1,39 @@
+{
+  "configurations" : [
+    {
+      "id" : "CD1A78FE-5403-4F02-B9D8-901ECF6C4559",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:n_Weather.xcodeproj",
+      "identifier" : "446B047A2EC0C74200402E49",
+      "name" : "n_Weather"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:n_Weather.xcodeproj",
+        "identifier" : "446B04932EC0C74300402E49",
+        "name" : "n_WeatherTests"
+      }
+    },
+    {
+      "enabled" : false,
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:n_Weather.xcodeproj",
+        "identifier" : "446B049D2EC0C74300402E49",
+        "name" : "n_WeatherUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

@@ -5,6 +5,7 @@ protocol NotificationServiceProtocol {
     func scheduleWeatherNotification(
         for city: String,
         temperature: Int,
+        description: String,
         frequency: NotificationFrequency
     )
     func cancelWeatherNotification(for city: String)

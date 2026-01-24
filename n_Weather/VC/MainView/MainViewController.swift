@@ -5,6 +5,9 @@ protocol MainViewControllerProtocol: AnyObject {
     func displayError(error: Error)
     func displayCitySearchResults(_ cities: [String])
     func updateFavoriteStatus()
+    func showNotificationScheduled(for city: String)
+    func showError(_ message: String)
+    func showNotificationPermissionAlert()
 }
 
 class MainViewController: UIViewController {
@@ -13,8 +16,8 @@ class MainViewController: UIViewController {
     private var searchWorkItem: DispatchWorkItem?
     
     private var searchResults: [String] = []
-    
     private var hasNotificationsEnabled: Bool = false
+    private var currentCityName: String = ""
     
     private let searchResultsTableView: UITableView = {
         let table = UITableView()
@@ -140,6 +143,15 @@ class MainViewController: UIViewController {
         return imageView
     }()
     
+    lazy var lastUpdatedLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 12, weight: .light)
+        label.textAlignment = .left
+        label.isHidden = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     private func updateFavoriteButtonState() {
         let isFavorite = presenter.toggleCityFavoriteStatus()
         let imageName = isFavorite ? "star.square.fill" : "star.square"
@@ -156,15 +168,6 @@ class MainViewController: UIViewController {
         pushImageView.image = UIImage(systemName: imageName)
     }
     
-    lazy var lastUpdatedLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 12, weight: .light)
-        label.textAlignment = .left
-        label.isHidden = true
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
     @objc func handleFavoriteTap() {
         favoriteImageView.animateTap()
         
@@ -172,6 +175,7 @@ class MainViewController: UIViewController {
             presenter.removeCityFromFavorites()
             
             if hasNotificationsEnabled {
+                presenter.disableNotifications(for: currentCityName)
                 hasNotificationsEnabled = false
                 updateNotificationButtonIcon()
             }
@@ -184,22 +188,31 @@ class MainViewController: UIViewController {
         pushImageView.animateTap()
         
         if hasNotificationsEnabled {
+            presenter.disableNotifications(for: currentCityName)
             hasNotificationsEnabled = false
             updateNotificationButtonIcon()
+            
+            let alert = UIAlertController(
+                title: "Disabled",
+                message: "Notifications are now disabled for \(currentCityName)",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
         } else {
-            hasNotificationsEnabled = true
-            updateNotificationButtonIcon()
-            let isFavorite = presenter.toggleCityFavoriteStatus()
-            if !isFavorite {
-                presenter.saveCityToFavorites()
-                updateFavoriteButtonState()
-            }
+            showNotificationSettings(for: currentCityName)
         }
     }
     
     @objc func getUserLocation() {
         locationImageView.animateTap()
         presenter.fetchWeatherForCurrentLocation()
+    }
+    
+    private func showNotificationSettings(for cityName: String) {
+        let settingsView = NotificationSettingsView()
+        settingsView.delegate = self
+        settingsView.show(in: view)
     }
     
     func setupSearchBar() {
@@ -338,6 +351,8 @@ extension MainViewController: MainViewControllerProtocol {
         dateLabel.text = data.currentDate
         lastUpdatedLabel.text = data.lastUpdated
         
+        currentCityName = data.cityName
+        
         updateFavoriteButtonState()
         updateLastUpdatedLabelVisibility()
         
@@ -347,6 +362,76 @@ extension MainViewController: MainViewControllerProtocol {
     
     func displayError(error: Error) {
         showError(error)
+    }
+    
+    func showError(_ message: String) {
+        let alert = UIAlertController(
+            title: "Error",
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+    
+    func showNotificationPermissionAlert() {
+        let alert = UIAlertController(
+            title: "Allow notifications",
+            message: "To receive weather notifications, please enable them in your iOS settings.",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "Settings", style: .default) { _ in
+            if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(settingsURL)
+            }
+        })
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        
+        present(alert, animated: true)
+    }
+    
+    func showNotificationScheduled(for city: String) {
+        hasNotificationsEnabled = true
+        updateNotificationButtonIcon()
+        
+        let alert = UIAlertController(
+            title: "Done",
+            message: "Notification are enabled for \(city)",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+}
+
+extension MainViewController: NotificationSettingsViewDelegate {
+    func notificationSettingsView(_ view: NotificationSettingsView, didScheduleWithFrequency frequency: NotificationFrequency) {
+        guard !currentCityName.isEmpty else {
+            view.hide()
+            return
+        }
+        
+        let isFavorite = presenter.toggleCityFavoriteStatus()
+        if !isFavorite {
+            presenter.saveCityToFavorites()
+            updateFavoriteButtonState()
+        }
+        
+        switch frequency {
+        case .daily(let hour, let minute):
+            presenter.enableDailyNotifications(for: currentCityName, at: hour, minute: minute)
+            
+        case .once(let date):
+            presenter.scheduleOneTimeNotification(for: currentCityName, at: date)
+        }
+        
+        view.hide()
+    }
+    
+    func notificationSettingsViewDidCancel(_ view: NotificationSettingsView) {
+        view.hide()
     }
 }
 

@@ -1,14 +1,14 @@
-import NotificationCenter
+import UserNotifications
 
 enum NotificationFrequency {
     case once(date: Date)
     case daily(hour: Int, minute: Int)
 }
 
-class NotificationService: NotificationServiceProtocol {
+final class NotificationService: NotificationServiceProtocol {
+    
     private let notificationCenter = UNUserNotificationCenter.current()
     
-    //благословение на авторизацию
     func requestAuthorization(completion: @escaping (Bool) -> Void) {
         notificationCenter.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if let error = error {
@@ -18,6 +18,59 @@ class NotificationService: NotificationServiceProtocol {
                 completion(granted)
             }
         }
+    }
+    
+    func scheduleWeatherNotification(
+        for city: String,
+        temperature: Int,
+        description: String,
+        frequency: NotificationFrequency
+    ) {
+        let content = UNMutableNotificationContent()
+        content.title = "\(city)"
+        content.body = "\(temperature)°C, \(description)"
+        content.sound = .default
+        content.userInfo = [
+            "type": "weather",
+            "cityName": city,
+            "temperature": temperature
+        ]
+        
+        let trigger: UNCalendarNotificationTrigger
+        
+        switch frequency {
+        case .once(let date):
+            trigger = createOnceTrigger(for: date)
+            
+        case .daily(let hour, let minute):
+            trigger = createDailyTrigger(hour: hour, minute: minute)
+        }
+        
+        let identifier = "weather-\(city)"
+        let request = UNNotificationRequest(
+            identifier: identifier,
+            content: content,
+            trigger: trigger
+        )
+        
+        notificationCenter.add(request) { error in
+            if let error = error {
+                print("Failed to schedule weather notification: \(error)")
+            } else {
+                self.logScheduledNotification(city: city, frequency: frequency)
+            }
+        }
+    }
+    
+    func cancelWeatherNotification(for city: String) {
+        let identifier = "weather-\(city)"
+        notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
+        print("Cancelled notification for \(city)")
+    }
+    
+    func cancelAllNotifications() {
+        notificationCenter.removeAllPendingNotificationRequests()
+        print("All notifications cancelled")
     }
     
     private func createOnceTrigger(for date: Date) -> UNCalendarNotificationTrigger {
@@ -55,67 +108,5 @@ class NotificationService: NotificationServiceProtocol {
         case .daily(let hour, let minute):
             print("Scheduled DAILY notification for \(city) at \(hour):\(String(format: "%02d", minute))")
         }
-    }
-    
-    //конструируем и планируем
-    func scheduleWeatherNotification(
-        for city: String,
-        temperature: Int,
-        frequency: NotificationFrequency
-    ) {
-        func scheduleWeatherNotification(
-            for city: String,
-            temperature: Int,
-            description: String,
-            frequency: NotificationFrequency
-        ) {
-            let content = UNMutableNotificationContent()
-            content.title = "\(city)"
-            content.body = "\(temperature)°C, \(description)"
-            content.sound = .default
-            content.userInfo = [
-                "type": "weather",
-                "cityName": city,
-                "temperature": temperature
-            ]
-            
-            let trigger: UNCalendarNotificationTrigger
-            
-            switch frequency {
-            case .once(let date):
-                trigger = createOnceTrigger(for: date)
-                
-            case .daily(let hour, let minute):
-                trigger = createDailyTrigger(hour: hour, minute: minute)
-            }
-            
-            let identifier = "weather-\(city)"
-            let request = UNNotificationRequest(
-                identifier: identifier,
-                content: content,
-                trigger: trigger
-            )
-            
-            notificationCenter.add(request) { error in
-                if let error = error {
-                    print("Failed to schedule weather notification: \(error)")
-                } else {
-                    self.logScheduledNotification(city: city, frequency: frequency)
-                }
-            }
-        }
-        
-    }
-    
-    //алга нотификации
-    func cancelWeatherNotification(for city: String) {
-        let identifier = "weather-\(city)"
-        notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
-        print("Cancelled notification for \(city)")
-    }
-    
-    func cancelAllNotifications() {
-        notificationCenter.removeAllPendingNotificationRequests()
-        print("All notifications cancelled")
     }
 }

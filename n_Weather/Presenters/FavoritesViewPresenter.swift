@@ -3,24 +3,26 @@ import Foundation
 import CoreData
 internal import _LocationEssentials
 
-
 class FavoritesViewPresenter: FavoritesViewPresenterProtocol {
-
+    
     weak var view: FavoritesViewControllerProtocol?
     let dataCoreManager: FavoritesStorageProtocol
     private let repository: WeatherRepositoryProtocol
     private let locationService: LocationServiceProtocol
+    private let notificationService: NotificationServiceProtocol
     
     init(view: FavoritesViewControllerProtocol?,
          dataCoreManager: FavoritesStorageProtocol,
          repository: WeatherRepositoryProtocol,
-         locatonService: LocationServiceProtocol) {
+         locatonService: LocationServiceProtocol,
+         notificationService: NotificationServiceProtocol) {
         self.view = view
         self.dataCoreManager = dataCoreManager
         self.repository = repository
         self.locationService = locatonService
+        self.notificationService = notificationService
     }
-
+    
     func loadSavedWeather() -> [FavoriteCity] {
         let cities = dataCoreManager.fetchAllFavorites()
         return cities
@@ -43,7 +45,7 @@ class FavoritesViewPresenter: FavoritesViewPresenterProtocol {
     
     func refreshAllFavorites() {
         let favorites = dataCoreManager.fetchAllFavorites()
-           
+        
         guard !favorites.isEmpty else { return }
         
         let dispatchGroup = DispatchGroup()
@@ -92,11 +94,103 @@ class FavoritesViewPresenter: FavoritesViewPresenterProtocol {
         let allFavorites = dataCoreManager.fetchAllFavorites()
         NotificationCenter.default.post(name: .updateFromFavoritesScreen, object: nil)
         for city in allFavorites {
+            notificationService.cancelWeatherNotification(for: city.cityName)
             dataCoreManager.deleteFavoriteByCityName(byName: city.cityName)
         }
     }
     
     func deleteCity(cityName: String) {
+        notificationService.cancelWeatherNotification(for: cityName)
         dataCoreManager.deleteFavoriteByCityName(byName: cityName)
+    }
+    
+    func enableDailyNotifications(for cityName: String, at hour: Int, minute: Int) {
+        notificationService.requestAuthorization { [weak self] granted in
+            guard let self = self else { return }
+            
+            if granted {
+                self.scheduleDailyNotification(for: cityName, hour: hour, minute: minute)
+            } else {
+                DispatchQueue.main.async {
+                    self.view?.showNotificationPermissionAlert()
+                }
+            }
+        }
+    }
+
+    func scheduleOneTimeNotification(for cityName: String, at date: Date) {
+        notificationService.requestAuthorization { [weak self] granted in
+            guard let self = self else { return }
+            
+            if granted {
+                self.scheduleOnceNotification(for: cityName, date: date)
+            } else {
+                DispatchQueue.main.async {
+                    self.view?.showNotificationPermissionAlert()
+                }
+            }
+        }
+    }
+    
+    func disableNotifications(for cityName: String) {
+        notificationService.cancelWeatherNotification(for: cityName)
+        print("Notifications disabled for \(cityName)")
+    }
+    
+    
+    private func scheduleDailyNotification(for cityName: String, hour: Int, minute: Int) {
+        guard let cachedWeather = dataCoreManager.getCurrentWeather(for: cityName) else {
+            print("No cached weather for \(cityName)")
+            DispatchQueue.main.async { [weak self] in
+                self?.view?.showError(" No data for \(cityName)")
+            }
+            return
+        }
+        
+        let temperature = Int(cachedWeather.temperature)
+        let description = cachedWeather.weatherDescription ?? "No Data"
+        
+        notificationService.scheduleWeatherNotification(
+            for: cityName,
+            temperature: temperature,
+            description: description,
+            frequency: .daily(hour: hour, minute: minute)
+        )
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.view?.showNotificationScheduled(for: cityName)
+        }
+        
+        print("Daily notification scheduled for \(cityName) at \(hour):\(String(format: "%02d", minute))")
+    }
+    
+    /// Планирует однократное уведомление
+    private func scheduleOnceNotification(for cityName: String, date: Date) {
+        guard let cachedWeather = dataCoreManager.getCurrentWeather(for: cityName) else {
+            print("No cached weather for \(cityName)")
+            DispatchQueue.main.async { [weak self] in
+                self?.view?.showError("Нет сохранённых данных о погоде для \(cityName)")
+            }
+            return
+        }
+        
+        let temperature = Int(cachedWeather.temperature)
+        let description = cachedWeather.weatherDescription ?? "Нет данных"
+        
+        notificationService.scheduleWeatherNotification(
+            for: cityName,
+            temperature: temperature,
+            description: description,
+            frequency: .once(date: date)
+        )
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.view?.showNotificationScheduled(for: cityName)
+        }
+        
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        print("One-time notification scheduled for \(cityName) at \(formatter.string(from: date))")
     }
 }

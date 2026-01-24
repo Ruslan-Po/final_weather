@@ -147,4 +147,34 @@ class DataCoreStorageManager: FavoritesStorageProtocol {
     func isFavorite(cityName: String) -> Bool {
         return findCity(byName: cityName) != nil
     }
+    
+    //notify
+    
+    func getLatestWeather(for cityName: String) -> CachedWeather? {
+            guard let city = findCity(byName: cityName) else {
+                print("City \(cityName) not found in favorites")
+                return nil
+            }
+            
+            guard let forecasts = city.forecast as? Set<CachedWeather>, !forecasts.isEmpty else {
+                print("No cached weather for \(cityName)")
+                return nil
+            }
+            
+            let now = Date().timeIntervalSince1970
+            let sortedForecasts = forecasts.sorted { abs(Double($0.dateTime) - now) < abs(Double($1.dateTime) - now) }
+            
+            return sortedForecasts.first
+        }
+        
+        func getCurrentWeather(for cityName: String) -> CachedWeather? {
+            guard let city = findCity(byName: cityName) else {
+                return nil
+            }
+            
+            guard let forecasts = city.forecast as? Set<CachedWeather>, !forecasts.isEmpty else {
+                return nil
+            }
+            return forecasts.sorted { $0.dateTime < $1.dateTime }.first
+        }
 }

@@ -2,7 +2,9 @@ import UIKit
 
 protocol FavoritesViewControllerProtocol: AnyObject {
     func getWeather()
-    func showError(_ error: Error)
+    func showError(_ message: String)
+    func showNotificationPermissionAlert()
+    func showNotificationScheduled(for city: String)
 }
 
 class FavoritesViewController: UIViewController {
@@ -164,6 +166,44 @@ class FavoritesViewController: UIViewController {
 }
 
 extension FavoritesViewController: FavoritesViewControllerProtocol {
+    func showNotificationPermissionAlert() {
+            let alert = UIAlertController(
+                title: "Allow notifications",
+                message: "To receive weather notifications, please enable them in your iOS settings.",
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "Settings", style: .default) { _ in
+                if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(settingsURL)
+                }
+            })
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            
+            present(alert, animated: true)
+        }
+        
+        func showNotificationScheduled(for city: String) {
+            let alert = UIAlertController(
+                title: "Done",
+                message: "Notifications are scheduled for \(city)",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+        }
+    
+    func showError(_ message: String) {
+        let alert = UIAlertController(
+                    title: "Erroe",
+                    message: message,
+                    preferredStyle: .alert
+                )
+                alert.addAction(UIAlertAction(title: "OK", style: .default))
+                present(alert, animated: true)
+    }
+    
     func getWeather() {
         favoriteCities = presenter.loadSavedWeather()
         favoritesCityTableView.displayFavoriteCitiesTable(favorite: favoriteCities)

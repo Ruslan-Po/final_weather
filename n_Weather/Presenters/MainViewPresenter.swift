@@ -3,6 +3,8 @@ import Foundation
 internal import _LocationEssentials
 
 final class MainViewPresenter: MainViewPresenterProtocol {
+ 
+    
     weak var view: MainViewControllerProtocol?
     private let repository: WeatherRepositoryProtocol
     var locationService: LocationServiceProtocol?
@@ -10,6 +12,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
     private let greetingHelper = Greetings()
     private let citySearchService: CitySearchServiceProtocol
     private let favoritesStorage: FavoritesStorageProtocol
+    private let notificationService: NotificationServiceProtocol
     
     private var currentCityName: String?
 
@@ -19,6 +22,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
          citySearchService: CitySearchServiceProtocol,
          locationStorage: LocationStorageProtocol,
          favoritesStorage: FavoritesStorageProtocol,
+         notificationService: NotificationServiceProtocol
          
         ) {
         self.view = view
@@ -27,7 +31,7 @@ final class MainViewPresenter: MainViewPresenterProtocol {
         self.locationStorage = locationStorage
         self.citySearchService = citySearchService
         self.favoritesStorage = favoritesStorage
-       
+        self.notificationService = notificationService
         setupCitySearch()
 
     }
@@ -253,5 +257,82 @@ final class MainViewPresenter: MainViewPresenterProtocol {
     
     func updateFavoriteCityData(weather: WeatherModel) {
         favoritesStorage.updateFavorite(cityName: currentCityName ?? "", with: weather)
+    }
+    
+    func enableDailyNotifications(for cityName: String, at hour: Int, minute: Int) {
+           notificationService.requestAuthorization { [weak self] granted in
+               guard let self = self else { return }
+               
+               if granted {
+                   self.scheduleDailyNotification(for: cityName, hour: hour, minute: minute)
+               } else {
+                   DispatchQueue.main.async {
+                       self.view?.showNotificationPermissionAlert()
+                   }
+               }
+           }
+       }
+       
+       func scheduleOneTimeNotification(for cityName: String, at date: Date) {
+           notificationService.requestAuthorization { [weak self] granted in
+               guard let self = self else { return }
+               
+               if granted {
+                   self.scheduleOnceNotification(for: cityName, date: date)
+               } else {
+                   DispatchQueue.main.async {
+                       self.view?.showNotificationPermissionAlert()
+                   }
+               }
+           }
+       }
+    
+    private func scheduleDailyNotification(for cityName: String, hour: Int, minute: Int) {
+        guard let cachedWeather = favoritesStorage.getCurrentWeather(for: cityName) else {
+            DispatchQueue.main.async { [weak self] in
+                self?.view?.showError("No data for \(cityName)")
+            }
+            return
+        }
+        
+        let temperature = Int(cachedWeather.temperature)
+        let description = cachedWeather.weatherDescription ?? "No Data"
+        
+        notificationService.scheduleWeatherNotification(
+            for: cityName,
+            temperature: temperature,
+            description: description,
+            frequency: .daily(hour: hour, minute: minute)
+        )
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.view?.showNotificationScheduled(for: cityName)
+        }
+    }
+
+    private func scheduleOnceNotification(for cityName: String, date: Date) {
+        guard let cachedWeather = favoritesStorage.getCurrentWeather(for: cityName) else {
+            DispatchQueue.main.async { [weak self] in
+                self?.view?.showError("No data for  \(cityName)")
+            }
+            return
+        }
+        
+        let temperature = Int(cachedWeather.temperature)
+        let description = cachedWeather.weatherDescription ?? "No Data"
+        
+        notificationService.scheduleWeatherNotification(
+            for: cityName,
+            temperature: temperature,
+            description: description,
+            frequency: .once(date: date)
+        )
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.view?.showNotificationScheduled(for: cityName)
+        }
+    }
+    func disableNotifications(for cityName: String) {
+        notificationService.cancelWeatherNotification(for: cityName)
     }
 }

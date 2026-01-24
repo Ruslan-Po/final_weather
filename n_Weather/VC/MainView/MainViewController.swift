@@ -14,6 +14,8 @@ class MainViewController: UIViewController {
     
     private var searchResults: [String] = []
     
+    private var hasNotificationsEnabled: Bool = false
+    
     private let searchResultsTableView: UITableView = {
         let table = UITableView()
         table.translatesAutoresizingMaskIntoConstraints = false
@@ -124,6 +126,20 @@ class MainViewController: UIViewController {
         return imageView
     }()
     
+    lazy var pushImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "bell.square")
+        imageView.tintColor = AppColors.tint
+        imageView.contentMode = .scaleAspectFit
+        imageView.isUserInteractionEnabled = true
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(togglePushNotifications))
+        imageView.addGestureRecognizer(tap)
+        
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
     private func updateFavoriteButtonState() {
         let isFavorite = presenter.toggleCityFavoriteStatus()
         let imageName = isFavorite ? "star.square.fill" : "star.square"
@@ -135,24 +151,9 @@ class MainViewController: UIViewController {
         lastUpdatedLabel.isHidden = !isFavorite
     }
     
-    private func animateFavoriteButton() {
-        UIView.animate(
-            withDuration: 0.1,
-            animations: {
-                self.favoriteImageView.transform = CGAffineTransform(scaleX: 0.85, y: 0.85)
-            },
-            completion: { _ in
-                UIView.animate(
-                    withDuration: 0.2,
-                    delay: 0,
-                    usingSpringWithDamping: 0.5,
-                    initialSpringVelocity: 0.5,
-                    options: .curveEaseOut
-                ) {
-                    self.favoriteImageView.transform = .identity
-                }
-            }
-        )
+    private func updateNotificationButtonIcon() {
+        let imageName = hasNotificationsEnabled ? "bell.square.fill" : "bell.square"
+        pushImageView.image = UIImage(systemName: imageName)
     }
     
     lazy var lastUpdatedLabel: UILabel = {
@@ -164,31 +165,40 @@ class MainViewController: UIViewController {
         return label
     }()
     
-    @objc func handleFavoriteTap(){
-        animateFavoriteButton()
-        if presenter.toggleCityFavoriteStatus(){
+    @objc func handleFavoriteTap() {
+        favoriteImageView.animateTap()
+        
+        if presenter.toggleCityFavoriteStatus() {
             presenter.removeCityFromFavorites()
-        } else {presenter.saveCityToFavorites()}
+            
+            if hasNotificationsEnabled {
+                hasNotificationsEnabled = false
+                updateNotificationButtonIcon()
+            }
+        } else {
+            presenter.saveCityToFavorites()
+        }
+    }
+    
+    @objc func togglePushNotifications() {
+        pushImageView.animateTap()
+        
+        if hasNotificationsEnabled {
+            hasNotificationsEnabled = false
+            updateNotificationButtonIcon()
+        } else {
+            hasNotificationsEnabled = true
+            updateNotificationButtonIcon()
+            let isFavorite = presenter.toggleCityFavoriteStatus()
+            if !isFavorite {
+                presenter.saveCityToFavorites()
+                updateFavoriteButtonState()
+            }
+        }
     }
     
     @objc func getUserLocation() {
-        UIView.animate(
-            withDuration: 0.1,
-            animations: {
-                self.locationImageView.transform = CGAffineTransform(scaleX: 0.85, y: 0.85)
-            },
-            completion: { _ in
-                UIView.animate(
-                    withDuration: 0.2,
-                    delay: 0,
-                    usingSpringWithDamping: 0.5,
-                    initialSpringVelocity: 0.5,
-                    options: .curveEaseOut
-                ) {
-                    self.locationImageView.transform = .identity
-                }
-            }
-        )
+        locationImageView.animateTap()
         presenter.fetchWeatherForCurrentLocation()
     }
     
@@ -207,7 +217,6 @@ class MainViewController: UIViewController {
         searchTextField.layer.shadowOffset = CGSize(width: 0, height: 1)
         searchTextField.layer.shadowOpacity = 0.1
         searchTextField.layer.shadowRadius = 2
-        
     }
     
     private func setupSearchResultsTableView() {
@@ -252,24 +261,29 @@ class MainViewController: UIViewController {
         view.addSubview(cityLabel)
         view.addSubview(favoriteImageView)
         view.addSubview(lastUpdatedLabel)
+        view.addSubview(pushImageView)
         
         NSLayoutConstraint.activate([
             lastUpdatedLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Layout.extraSmallPadding),
-            lastUpdatedLabel.trailingAnchor.constraint(equalTo: favoriteImageView.trailingAnchor,constant: -5),
+            lastUpdatedLabel.trailingAnchor.constraint(equalTo: favoriteImageView.trailingAnchor, constant: -5),
             
             cityLabel.topAnchor.constraint(equalTo: lastUpdatedLabel.bottomAnchor, constant: Layout.smallPadding),
             cityLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.largePadding),
             
-            favoriteImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.mediumPadding),
+            pushImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.mediumPadding),
+            pushImageView.centerYAnchor.constraint(equalTo: cityLabel.centerYAnchor),
+            pushImageView.widthAnchor.constraint(equalToConstant: Layout.constantWidth),
+            pushImageView.heightAnchor.constraint(equalToConstant: Layout.constantHeight),
+
+            favoriteImageView.trailingAnchor.constraint(equalTo: pushImageView.leadingAnchor, constant: -Layout.extraSmallPadding),
             favoriteImageView.centerYAnchor.constraint(equalTo: cityLabel.centerYAnchor),
             favoriteImageView.widthAnchor.constraint(equalToConstant: Layout.constantWidth),
             favoriteImageView.heightAnchor.constraint(equalToConstant: Layout.constantHeight),
-            
+
             locationImageView.trailingAnchor.constraint(equalTo: favoriteImageView.leadingAnchor, constant: -Layout.extraSmallPadding),
             locationImageView.centerYAnchor.constraint(equalTo: cityLabel.centerYAnchor),
             locationImageView.widthAnchor.constraint(equalToConstant: Layout.constantWidth),
             locationImageView.heightAnchor.constraint(equalToConstant: Layout.constantHeight),
-            
             
             weatherImage.topAnchor.constraint(equalTo: cityLabel.bottomAnchor, constant: Layout.smallPadding),
             weatherImage.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.largePadding),
@@ -307,13 +321,10 @@ extension MainViewController: MainViewControllerProtocol {
         updateLastUpdatedLabelVisibility()
     }
     
-
-    
     func displayCitySearchResults(_ cities: [String]) {
         searchResults = cities
         searchResultsTableView.reloadData()
         searchResultsTableView.isHidden = cities.isEmpty
-        
     }
     
     func displayWeather(data: MainViewModel) {
@@ -329,12 +340,14 @@ extension MainViewController: MainViewControllerProtocol {
         
         updateFavoriteButtonState()
         updateLastUpdatedLabelVisibility()
+        
+        hasNotificationsEnabled = false
+        updateNotificationButtonIcon()
     }
     
     func displayError(error: Error) {
         showError(error)
     }
-    
 }
 
 extension MainViewController: UITextFieldDelegate {
@@ -369,6 +382,7 @@ extension MainViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         searchResults.count
     }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: CellIdentifiers.searchCell, for: indexPath)
         cell.textLabel?.text = searchResults[indexPath.row]

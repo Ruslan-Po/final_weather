@@ -19,7 +19,7 @@
 /* Begin PBXFileReference section */
 		446B047B2EC0C74200402E49 /* n_Weather.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = n_Weather.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		446B04942EC0C74300402E49 /* n_WeatherTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = n_WeatherTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		474557332F23898500A36C60 /* n_Weather.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = file; path = n_Weather.xctestplan; sourceTree = "<group>"; };
+		474557332F23898500A36C60 /* n_Weather.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = n_Weather.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */

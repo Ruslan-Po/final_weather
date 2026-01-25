@@ -7,7 +7,6 @@ protocol MainViewControllerProtocol: AnyObject {
     func updateFavoriteStatus()
     func showNotificationScheduled(for city: String)
     func showError(_ message: String)
-    func showNotificationPermissionAlert()
 }
 
 class MainViewController: UIViewController {
@@ -178,6 +177,14 @@ class MainViewController: UIViewController {
                 presenter.disableNotifications(for: currentCityName)
                 hasNotificationsEnabled = false
                 updateNotificationButtonIcon()
+                
+                NotificationStateManager.shared.setNotificationEnabled(false, for: currentCityName)
+                
+                NotificationCenter.default.post(
+                    name: .notificationStateDidChange,
+                    object: nil,
+                    userInfo: ["cityName": currentCityName, "enabled": false]
+                )
             }
         } else {
             presenter.saveCityToFavorites()
@@ -191,6 +198,8 @@ class MainViewController: UIViewController {
             presenter.disableNotifications(for: currentCityName)
             hasNotificationsEnabled = false
             updateNotificationButtonIcon()
+            
+            NotificationStateManager.shared.setNotificationEnabled(false, for: currentCityName)
             
             NotificationCenter.default.post(
                 name: .notificationStateDidChange,
@@ -375,7 +384,7 @@ extension MainViewController: MainViewControllerProtocol {
         updateFavoriteButtonState()
         updateLastUpdatedLabelVisibility()
         
-        hasNotificationsEnabled = false
+        hasNotificationsEnabled = NotificationStateManager.shared.isNotificationEnabled(for: data.cityName)
         updateNotificationButtonIcon()
     }
     
@@ -390,24 +399,6 @@ extension MainViewController: MainViewControllerProtocol {
             preferredStyle: .alert
         )
         alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
-    }
-    
-    func showNotificationPermissionAlert() {
-        let alert = UIAlertController(
-            title: "Allow notifications",
-            message: "To receive weather notifications, please enable them in your iOS settings.",
-            preferredStyle: .alert
-        )
-        
-        alert.addAction(UIAlertAction(title: "Settings", style: .default) { _ in
-            if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
-                UIApplication.shared.open(settingsURL)
-            }
-        })
-        
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        
         present(alert, animated: true)
     }
     
@@ -437,6 +428,8 @@ extension MainViewController: NotificationSettingsViewDelegate {
         case .once(let date):
             presenter.scheduleOneTimeNotification(for: currentCityName, at: date)
         }
+        
+        NotificationStateManager.shared.setNotificationEnabled(true, for: currentCityName)
         
         NotificationCenter.default.post(
             name: .notificationStateDidChange,

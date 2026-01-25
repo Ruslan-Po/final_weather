@@ -18,7 +18,6 @@ class FavoritesViewController: UIViewController {
     
     private var currentNotificationContext: NotificationContext?
     
-    
     lazy var favoritesCityTableView: FavoriteTableView = {
         let view = FavoriteTableView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -97,7 +96,6 @@ class FavoritesViewController: UIViewController {
         NotificationCenter.default.post(name: .favoritesDidChange, object: nil)
     }
     
-    
     private func setupNotifications() {
         NotificationCenter.default.addObserver(
             self,
@@ -106,11 +104,11 @@ class FavoritesViewController: UIViewController {
             object: nil
         )
         NotificationCenter.default.addObserver(
-               self,
-               selector: #selector(handleNotificationStateDidChange),
-               name: .notificationStateDidChange,
-               object: nil
-           )
+            self,
+            selector: #selector(handleNotificationStateDidChange),
+            name: .notificationStateDidChange,
+            object: nil
+        )
     }
     
     @objc private func handleNotificationStateDidChange(_ notification: NSNotification) {
@@ -119,7 +117,7 @@ class FavoritesViewController: UIViewController {
               let enabled = userInfo["enabled"] as? Bool else {
             return
         }
-
+        
         DispatchQueue.main.async { [weak self] in
             self?.favoritesCityTableView.updateNotificationState(for: cityName, enabled: enabled)
         }
@@ -142,7 +140,16 @@ class FavoritesViewController: UIViewController {
     
     private func deleteCity(cityName: String) {
         presenter.deleteCity(cityName: cityName)
+        
+        NotificationStateManager.shared.removeState(for: cityName)
+        
         NotificationCenter.default.post(name: .favoritesDidChange, object: nil)
+        
+        NotificationCenter.default.post(
+            name: .notificationStateDidChange,
+            object: nil,
+            userInfo: ["cityName": cityName, "enabled": false]
+        )
     }
     
     private func openDetailScreen(with cachedWeather: CachedWeather) {
@@ -177,7 +184,6 @@ class FavoritesViewController: UIViewController {
         ])
     }
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -192,7 +198,6 @@ class FavoritesViewController: UIViewController {
         NotificationCenter.default.removeObserver(self)
     }
 }
-
 
 extension FavoritesViewController: FavoritesViewControllerProtocol {
     
@@ -222,7 +227,6 @@ extension FavoritesViewController: FavoritesViewControllerProtocol {
     }
 }
 
-
 extension FavoritesViewController: FavoritesTableViewCellDelegate {
     
     func favoritesCell(_ cell: FavoritesTableViewCell, didTapNotificationForCity cityName: String) {
@@ -240,14 +244,15 @@ extension FavoritesViewController: FavoritesTableViewCellDelegate {
         presenter.disableNotifications(for: cityName)
         cell.updateNotificationState(enabled: false)
         
+        NotificationStateManager.shared.setNotificationEnabled(false, for: cityName)
+        
         NotificationCenter.default.post(
-                  name: .notificationStateDidChange,
-                  object: nil,
-                  userInfo: ["cityName": cityName, "enabled": false]
-              )
+            name: .notificationStateDidChange,
+            object: nil,
+            userInfo: ["cityName": cityName, "enabled": false]
+        )
     }
 }
-
 
 extension FavoritesViewController: NotificationSettingsViewDelegate {
     
@@ -269,11 +274,13 @@ extension FavoritesViewController: NotificationSettingsViewDelegate {
         
         context.cell?.updateNotificationState(enabled: true)
         
+        NotificationStateManager.shared.setNotificationEnabled(true, for: cityName)
+        
         NotificationCenter.default.post(
-                    name: .notificationStateDidChange,
-                    object: nil,
-                    userInfo: ["cityName": cityName, "enabled": true]
-                )
+            name: .notificationStateDidChange,
+            object: nil,
+            userInfo: ["cityName": cityName, "enabled": true]
+        )
         
         view.hide()
         currentNotificationContext = nil

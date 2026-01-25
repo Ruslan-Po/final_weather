@@ -56,10 +56,10 @@ class FavoritesTableViewCell: UITableViewCell {
             return
         }
         if hasNotificationsEnabled {
-               delegate?.favoritesCell(self, didRequestDisableNotificationForCity: cityName)
-           } else {
-               delegate?.favoritesCell(self, didTapNotificationForCity: cityName)
-           }
+            delegate?.favoritesCell(self, didRequestDisableNotificationForCity: cityName)
+        } else {
+            delegate?.favoritesCell(self, didTapNotificationForCity: cityName)
+        }
     }
     
     func updateNotificationState(enabled: Bool) {
@@ -68,12 +68,10 @@ class FavoritesTableViewCell: UITableViewCell {
         pushImageView.image = UIImage(systemName: imageName)
     }
     
-    
     private let lastUpdatedLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 12, weight: .light)
-        label.textAlignment = .left
-        
+        label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -113,21 +111,21 @@ class FavoritesTableViewCell: UITableViewCell {
             bgView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Layout.extraSmallPadding),
             bgView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.smallPadding),
             bgView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.smallPadding),
-
+            
             lastUpdatedLabel.topAnchor.constraint(equalTo: bgView.topAnchor, constant: Layout.smallPadding),
             lastUpdatedLabel.centerXAnchor.constraint(equalTo: bgView.centerXAnchor),
-
+            
             cityNameLabel.topAnchor.constraint(equalTo: lastUpdatedLabel.bottomAnchor, constant: Layout.extraSmallPadding),
             cityNameLabel.leadingAnchor.constraint(equalTo: bgView.leadingAnchor, constant: Layout.smallPadding),
-
+            
             tempLabel.centerYAnchor.constraint(equalTo: cityNameLabel.centerYAnchor),
             tempLabel.trailingAnchor.constraint(equalTo: pushImageView.leadingAnchor, constant: -Layout.extraSmallPadding),
-
+            
             pushImageView.centerYAnchor.constraint(equalTo: cityNameLabel.centerYAnchor),
             pushImageView.trailingAnchor.constraint(equalTo: bgView.trailingAnchor, constant: -Layout.smallPadding),
-            pushImageView.widthAnchor.constraint(equalToConstant: Layout.constantSmallSize),
-            pushImageView.heightAnchor.constraint(equalToConstant: Layout.constantSmallSize),
-
+            pushImageView.widthAnchor.constraint(equalToConstant: 30),
+            pushImageView.heightAnchor.constraint(equalToConstant: 30),
+            
             favoritesCollectionView.topAnchor.constraint(equalTo: cityNameLabel.bottomAnchor, constant: Layout.extraSmallPadding),
             favoritesCollectionView.leadingAnchor.constraint(equalTo: bgView.leadingAnchor, constant: Layout.smallPadding),
             favoritesCollectionView.trailingAnchor.constraint(equalTo: bgView.trailingAnchor, constant: -Layout.smallPadding),
@@ -159,6 +157,7 @@ class FavoritesTableViewCell: UITableViewCell {
     func favoriteCellConfig(item: FavoriteCity) {
         currentCityName = item.cityName
         cityNameLabel.text = item.cityName
+        
         if let cachedAt = item.cachedAt {
             lastUpdatedLabel.text = "Updated: \(DateTimeHelper.updateDateFormater(from: cachedAt))"
         } else {
@@ -171,7 +170,8 @@ class FavoritesTableViewCell: UITableViewCell {
         
         let filteredForecasts = filterCachedWeather(forecasts: item.forecastArray)
         favoritesCollectionView.configure(with: filteredForecasts)
-        hasNotificationsEnabled = false
-        updateNotificationState(enabled: false)
+        
+        hasNotificationsEnabled = NotificationStateManager.shared.isNotificationEnabled(for: item.cityName)
+        updateNotificationState(enabled: hasNotificationsEnabled)
     }
 }

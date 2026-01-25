@@ -148,7 +148,6 @@ class DataCoreStorageManager: FavoritesStorageProtocol {
         return findCity(byName: cityName) != nil
     }
     
-    //notify
     
     func getLatestWeather(for cityName: String) -> CachedWeather? {
             guard let city = findCity(byName: cityName) else {

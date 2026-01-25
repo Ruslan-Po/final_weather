@@ -2,15 +2,11 @@ import UIKit
 
 class FavoriteTableView: UIView {
     
-    // MARK: - Properties
-    
     var onDaySelected: ((CachedWeather) -> Void)?
     var onCityDeleted: ((String) -> Void)?
     weak var cellDelegate: FavoritesTableViewCellDelegate?
     
     private var favoriteCities: [FavoriteCity] = []
-    
-    // MARK: - UI Elements
     
     private let favoriteCityTableView: UITableView = {
         let tableView = UITableView()
@@ -20,8 +16,6 @@ class FavoriteTableView: UIView {
         return tableView
     }()
     
-    // MARK: - Init
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupTableView()
@@ -30,8 +24,6 @@ class FavoriteTableView: UIView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    // MARK: - Setup
     
     private func setupTableView() {
         addSubview(favoriteCityTableView)
@@ -46,8 +38,6 @@ class FavoriteTableView: UIView {
             favoriteCityTableView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
     }
-    
-    // MARK: - Public Methods
     
     func displayFavoriteCitiesTable(favorite: [FavoriteCity]) {
         self.favoriteCities = favorite
@@ -98,7 +88,7 @@ extension FavoriteTableView: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            let cityName = favoriteCities[indexPath.row].cityName ?? ""
+            let cityName = favoriteCities[indexPath.row].cityName
             onCityDeleted?(cityName)
         }
     }

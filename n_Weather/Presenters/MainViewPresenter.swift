@@ -260,32 +260,18 @@ final class MainViewPresenter: MainViewPresenterProtocol {
     }
     
     func enableDailyNotifications(for cityName: String, at hour: Int, minute: Int) {
-           notificationService.requestAuthorization { [weak self] granted in
-               guard let self = self else { return }
-               
-               if granted {
-                   self.scheduleDailyNotification(for: cityName, hour: hour, minute: minute)
-               } else {
-                   DispatchQueue.main.async {
-                       self.view?.showNotificationPermissionAlert()
-                   }
-               }
-           }
-       }
-       
-       func scheduleOneTimeNotification(for cityName: String, at date: Date) {
-           notificationService.requestAuthorization { [weak self] granted in
-               guard let self = self else { return }
-               
-               if granted {
-                   self.scheduleOnceNotification(for: cityName, date: date)
-               } else {
-                   DispatchQueue.main.async {
-                       self.view?.showNotificationPermissionAlert()
-                   }
-               }
-           }
-       }
+        notificationService.requestAuthorization { [weak self] granted in
+            guard let self = self, granted else { return }
+            self.scheduleDailyNotification(for: cityName, hour: hour, minute: minute)
+        }
+    }
+
+    func scheduleOneTimeNotification(for cityName: String, at date: Date) {
+        notificationService.requestAuthorization { [weak self] granted in
+            guard let self = self, granted else { return }
+            self.scheduleOnceNotification(for: cityName, date: date)
+        }
+    }
     
     private func scheduleDailyNotification(for cityName: String, hour: Int, minute: Int) {
         guard let cachedWeather = favoritesStorage.getCurrentWeather(for: cityName) else {

@@ -6,6 +6,7 @@ final class AppContainer {
     let locationService: LocationServiceProtocol = LocationService()
     let citySearchService: CitySearchServiceProtocol = CitySearchService()
     let favoritesStorage: FavoritesStorageProtocol = DataCoreStorageManager.shared
+    let notificationService: NotificationServiceProtocol = NotificationService()
     
     lazy var weatherRepository: WeatherRepositoryProtocol = {
             WeatherRepository(client: client)

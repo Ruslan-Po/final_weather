@@ -5,6 +5,8 @@ protocol MainViewControllerProtocol: AnyObject {
     func displayError(error: Error)
     func displayCitySearchResults(_ cities: [String])
     func updateFavoriteStatus()
+    func showNotificationScheduled(for city: String)
+    func showError(_ message: String)
 }
 
 class MainViewController: UIViewController {
@@ -13,6 +15,8 @@ class MainViewController: UIViewController {
     private var searchWorkItem: DispatchWorkItem?
     
     private var searchResults: [String] = []
+    private var hasNotificationsEnabled: Bool = false
+    private var currentCityName: String = ""
     
     private let searchResultsTableView: UITableView = {
         let table = UITableView()
@@ -124,6 +128,29 @@ class MainViewController: UIViewController {
         return imageView
     }()
     
+    lazy var pushImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "bell.square")
+        imageView.tintColor = AppColors.tint
+        imageView.contentMode = .scaleAspectFit
+        imageView.isUserInteractionEnabled = true
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(togglePushNotifications))
+        imageView.addGestureRecognizer(tap)
+        
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+    lazy var lastUpdatedLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 12, weight: .light)
+        label.textAlignment = .left
+        label.isHidden = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     private func updateFavoriteButtonState() {
         let isFavorite = presenter.toggleCityFavoriteStatus()
         let imageName = isFavorite ? "star.square.fill" : "star.square"
@@ -135,61 +162,64 @@ class MainViewController: UIViewController {
         lastUpdatedLabel.isHidden = !isFavorite
     }
     
-    private func animateFavoriteButton() {
-        UIView.animate(
-            withDuration: 0.1,
-            animations: {
-                self.favoriteImageView.transform = CGAffineTransform(scaleX: 0.85, y: 0.85)
-            },
-            completion: { _ in
-                UIView.animate(
-                    withDuration: 0.2,
-                    delay: 0,
-                    usingSpringWithDamping: 0.5,
-                    initialSpringVelocity: 0.5,
-                    options: .curveEaseOut
-                ) {
-                    self.favoriteImageView.transform = .identity
-                }
-            }
-        )
+    private func updateNotificationButtonIcon() {
+        let imageName = hasNotificationsEnabled ? "bell.square.fill" : "bell.square"
+        pushImageView.image = UIImage(systemName: imageName)
     }
     
-    lazy var lastUpdatedLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 12, weight: .light)
-        label.textAlignment = .left
-        label.isHidden = true
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    @objc func handleFavoriteTap(){
-        animateFavoriteButton()
-        if presenter.toggleCityFavoriteStatus(){
+    @objc func handleFavoriteTap() {
+        favoriteImageView.animateTap()
+        
+        if presenter.toggleCityFavoriteStatus() {
             presenter.removeCityFromFavorites()
-        } else {presenter.saveCityToFavorites()}
+            
+            if hasNotificationsEnabled {
+                presenter.disableNotifications(for: currentCityName)
+                hasNotificationsEnabled = false
+                updateNotificationButtonIcon()
+                
+                NotificationStateManager.shared.setNotificationEnabled(false, for: currentCityName)
+                
+                NotificationCenter.default.post(
+                    name: .notificationStateDidChange,
+                    object: nil,
+                    userInfo: ["cityName": currentCityName, "enabled": false]
+                )
+            }
+        } else {
+            presenter.saveCityToFavorites()
+        }
+    }
+    
+    @objc func togglePushNotifications() {
+        pushImageView.animateTap()
+        
+        if hasNotificationsEnabled {
+            presenter.disableNotifications(for: currentCityName)
+            hasNotificationsEnabled = false
+            updateNotificationButtonIcon()
+            
+            NotificationStateManager.shared.setNotificationEnabled(false, for: currentCityName)
+            
+            NotificationCenter.default.post(
+                name: .notificationStateDidChange,
+                object: nil,
+                userInfo: ["cityName": currentCityName, "enabled": false]
+            )
+        } else {
+            showNotificationSettings(for: currentCityName)
+        }
     }
     
     @objc func getUserLocation() {
-        UIView.animate(
-            withDuration: 0.1,
-            animations: {
-                self.locationImageView.transform = CGAffineTransform(scaleX: 0.85, y: 0.85)
-            },
-            completion: { _ in
-                UIView.animate(
-                    withDuration: 0.2,
-                    delay: 0,
-                    usingSpringWithDamping: 0.5,
-                    initialSpringVelocity: 0.5,
-                    options: .curveEaseOut
-                ) {
-                    self.locationImageView.transform = .identity
-                }
-            }
-        )
+        locationImageView.animateTap()
         presenter.fetchWeatherForCurrentLocation()
+    }
+    
+    private func showNotificationSettings(for cityName: String) {
+        let settingsView = NotificationSettingsView()
+        settingsView.delegate = self
+        settingsView.show(in: view)
     }
     
     func setupSearchBar() {
@@ -207,7 +237,6 @@ class MainViewController: UIViewController {
         searchTextField.layer.shadowOffset = CGSize(width: 0, height: 1)
         searchTextField.layer.shadowOpacity = 0.1
         searchTextField.layer.shadowRadius = 2
-        
     }
     
     private func setupSearchResultsTableView() {
@@ -231,6 +260,27 @@ class MainViewController: UIViewController {
             name: .favoritesDidChange,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleNotificationStateDidChange),
+            name: .notificationStateDidChange,
+            object: nil
+        )
+    }
+    
+    @objc private func handleNotificationStateDidChange(_ notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+              let cityName = userInfo["cityName"] as? String,
+              let enabled = userInfo["enabled"] as? Bool else {
+            return
+        }
+        
+        if cityName == currentCityName {
+            DispatchQueue.main.async { [weak self] in
+                self?.hasNotificationsEnabled = enabled
+                self?.updateNotificationButtonIcon()
+            }
+        }
     }
     
     @objc private func handleFavoritesDidChange() {
@@ -252,15 +302,21 @@ class MainViewController: UIViewController {
         view.addSubview(cityLabel)
         view.addSubview(favoriteImageView)
         view.addSubview(lastUpdatedLabel)
+        view.addSubview(pushImageView)
         
         NSLayoutConstraint.activate([
             lastUpdatedLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Layout.extraSmallPadding),
-            lastUpdatedLabel.trailingAnchor.constraint(equalTo: favoriteImageView.trailingAnchor,constant: -5),
+            lastUpdatedLabel.trailingAnchor.constraint(equalTo: favoriteImageView.trailingAnchor, constant: -5),
             
             cityLabel.topAnchor.constraint(equalTo: lastUpdatedLabel.bottomAnchor, constant: Layout.smallPadding),
             cityLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.largePadding),
             
-            favoriteImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.mediumPadding),
+            pushImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.mediumPadding),
+            pushImageView.centerYAnchor.constraint(equalTo: cityLabel.centerYAnchor),
+            pushImageView.widthAnchor.constraint(equalToConstant: Layout.constantWidth),
+            pushImageView.heightAnchor.constraint(equalToConstant: Layout.constantHeight),
+            
+            favoriteImageView.trailingAnchor.constraint(equalTo: pushImageView.leadingAnchor, constant: -Layout.extraSmallPadding),
             favoriteImageView.centerYAnchor.constraint(equalTo: cityLabel.centerYAnchor),
             favoriteImageView.widthAnchor.constraint(equalToConstant: Layout.constantWidth),
             favoriteImageView.heightAnchor.constraint(equalToConstant: Layout.constantHeight),
@@ -269,7 +325,6 @@ class MainViewController: UIViewController {
             locationImageView.centerYAnchor.constraint(equalTo: cityLabel.centerYAnchor),
             locationImageView.widthAnchor.constraint(equalToConstant: Layout.constantWidth),
             locationImageView.heightAnchor.constraint(equalToConstant: Layout.constantHeight),
-            
             
             weatherImage.topAnchor.constraint(equalTo: cityLabel.bottomAnchor, constant: Layout.smallPadding),
             weatherImage.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.largePadding),
@@ -307,13 +362,10 @@ extension MainViewController: MainViewControllerProtocol {
         updateLastUpdatedLabelVisibility()
     }
     
-
-    
     func displayCitySearchResults(_ cities: [String]) {
         searchResults = cities
         searchResultsTableView.reloadData()
         searchResultsTableView.isHidden = cities.isEmpty
-        
     }
     
     func displayWeather(data: MainViewModel) {
@@ -327,14 +379,70 @@ extension MainViewController: MainViewControllerProtocol {
         dateLabel.text = data.currentDate
         lastUpdatedLabel.text = data.lastUpdated
         
+        currentCityName = data.cityName
+        
         updateFavoriteButtonState()
         updateLastUpdatedLabelVisibility()
+        
+        hasNotificationsEnabled = NotificationStateManager.shared.isNotificationEnabled(for: data.cityName)
+        updateNotificationButtonIcon()
     }
     
     func displayError(error: Error) {
         showError(error)
     }
     
+    func showError(_ message: String) {
+        let alert = UIAlertController(
+            title: "Error",
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+    
+    func showNotificationScheduled(for city: String) {
+        hasNotificationsEnabled = true
+        updateNotificationButtonIcon()
+    }
+}
+
+extension MainViewController: NotificationSettingsViewDelegate {
+    func notificationSettingsView(_ view: NotificationSettingsView, didScheduleWithFrequency frequency: NotificationFrequency) {
+        guard !currentCityName.isEmpty else {
+            view.hide()
+            return
+        }
+        
+        let isFavorite = presenter.toggleCityFavoriteStatus()
+        if !isFavorite {
+            presenter.saveCityToFavorites()
+            updateFavoriteButtonState()
+        }
+        
+        switch frequency {
+        case .daily(let hour, let minute):
+            presenter.enableDailyNotifications(for: currentCityName, at: hour, minute: minute)
+            
+        case .once(let date):
+            presenter.scheduleOneTimeNotification(for: currentCityName, at: date)
+        }
+        
+        NotificationStateManager.shared.setNotificationEnabled(true, for: currentCityName)
+        
+        NotificationCenter.default.post(
+            name: .notificationStateDidChange,
+            object: nil,
+            userInfo: ["cityName": currentCityName, "enabled": true]
+        )
+        
+        view.hide()
+    }
+    
+    func notificationSettingsViewDidCancel(_ view: NotificationSettingsView) {
+        view.hide()
+    }
 }
 
 extension MainViewController: UITextFieldDelegate {
@@ -369,6 +477,7 @@ extension MainViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         searchResults.count
     }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: CellIdentifiers.searchCell, for: indexPath)
         cell.textLabel?.text = searchResults[indexPath.row]

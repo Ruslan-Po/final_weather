@@ -11,6 +11,7 @@ enum Layout {
     static let cornerRadius: CGFloat = 8
     static let constantHeight: CGFloat = 44
     static let constantWidth: CGFloat = 44
+    static let constantSmallSize: CGFloat = 30
     
     enum Spacing {
         static let minimal: CGFloat = 5

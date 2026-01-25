@@ -3,6 +3,7 @@ import Foundation
 protocol WeatherRepositoryProtocol {
     var currentWeather: WeatherModel? {get}
     func fetchCurrentWeather(lon: Double, lat: Double, forceRefresh: Bool, completion: @escaping (Result<WeatherModel, Error>) -> Void)
+    
 }
 
 class WeatherRepository: WeatherRepositoryProtocol {

@@ -12,6 +12,11 @@ protocol FavoritesViewPresenterProtocol: AnyObject {
     func removeAllFavorites()
     func deleteCity(cityName: String)
     func createDetailViewModel(from cachedWeather: CachedWeather) -> DetailViewModel
+    
+    func enableDailyNotifications(for cityName: String, at hour: Int, minute: Int)
+    func scheduleOneTimeNotification(for cityName: String, at date: Date)
+    func disableNotifications(for cityName: String)
+    
 }
 
 protocol MainViewPresenterProtocol: WeatherViewPresenterProtocol {
@@ -21,7 +26,10 @@ protocol MainViewPresenterProtocol: WeatherViewPresenterProtocol {
     func searchWeather(for cityName: String)
     func toggleCityFavoriteStatus()-> Bool
     func searchCity(query: String)
+    func enableDailyNotifications(for cityName: String, at hour: Int, minute: Int)
+    func scheduleOneTimeNotification(for cityName: String, at date: Date)
     func updateFavoriteCityData(weather: WeatherModel)
+    func disableNotifications(for cityName: String)
     func start()
 }
 
@@ -45,5 +53,8 @@ protocol FavoritesStorageProtocol {
     func deleteFavoriteByCityName(byName cityName: String)
     func isFavorite(cityName: String) -> Bool
     func saveContext()
+    
+    func getCurrentWeather(for cityName: String) -> CachedWeather?
+    func getLatestWeather(for cityName: String) -> CachedWeather?
 }
 

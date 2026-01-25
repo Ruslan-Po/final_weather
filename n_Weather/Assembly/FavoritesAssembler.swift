@@ -7,7 +7,9 @@ class FavoritesAssembler {
         let presenter = FavoritesViewPresenter(view: view,
                                                dataCoreManager: container.favoritesStorage,
                                                repository: container.weatherRepository,
-                                               locatonService: container.locationService)
+                                               locatonService: container.locationService,
+                                               notificationService: container.notificationService,
+            )
         view.presenter = presenter
         
         let navigationController = UINavigationController(rootViewController: view)

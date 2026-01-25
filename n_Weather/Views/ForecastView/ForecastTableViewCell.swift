@@ -25,6 +25,7 @@ class ForecastTableViewCell: UITableViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
+    
 
     lazy var dateLabel: UILabel = {
         let label = UILabel()

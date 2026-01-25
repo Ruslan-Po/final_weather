@@ -192,13 +192,11 @@ class MainViewController: UIViewController {
             hasNotificationsEnabled = false
             updateNotificationButtonIcon()
             
-            let alert = UIAlertController(
-                title: "Disabled",
-                message: "Notifications are now disabled for \(currentCityName)",
-                preferredStyle: .alert
+            NotificationCenter.default.post(
+                name: .notificationStateDidChange,
+                object: nil,
+                userInfo: ["cityName": currentCityName, "enabled": false]
             )
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(alert, animated: true)
         } else {
             showNotificationSettings(for: currentCityName)
         }
@@ -253,6 +251,27 @@ class MainViewController: UIViewController {
             name: .favoritesDidChange,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleNotificationStateDidChange),
+            name: .notificationStateDidChange,
+            object: nil
+        )
+    }
+    
+    @objc private func handleNotificationStateDidChange(_ notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+              let cityName = userInfo["cityName"] as? String,
+              let enabled = userInfo["enabled"] as? Bool else {
+            return
+        }
+        
+        if cityName == currentCityName {
+            DispatchQueue.main.async { [weak self] in
+                self?.hasNotificationsEnabled = enabled
+                self?.updateNotificationButtonIcon()
+            }
+        }
     }
     
     @objc private func handleFavoritesDidChange() {
@@ -287,12 +306,12 @@ class MainViewController: UIViewController {
             pushImageView.centerYAnchor.constraint(equalTo: cityLabel.centerYAnchor),
             pushImageView.widthAnchor.constraint(equalToConstant: Layout.constantWidth),
             pushImageView.heightAnchor.constraint(equalToConstant: Layout.constantHeight),
-
+            
             favoriteImageView.trailingAnchor.constraint(equalTo: pushImageView.leadingAnchor, constant: -Layout.extraSmallPadding),
             favoriteImageView.centerYAnchor.constraint(equalTo: cityLabel.centerYAnchor),
             favoriteImageView.widthAnchor.constraint(equalToConstant: Layout.constantWidth),
             favoriteImageView.heightAnchor.constraint(equalToConstant: Layout.constantHeight),
-
+            
             locationImageView.trailingAnchor.constraint(equalTo: favoriteImageView.leadingAnchor, constant: -Layout.extraSmallPadding),
             locationImageView.centerYAnchor.constraint(equalTo: cityLabel.centerYAnchor),
             locationImageView.widthAnchor.constraint(equalToConstant: Layout.constantWidth),
@@ -395,14 +414,6 @@ extension MainViewController: MainViewControllerProtocol {
     func showNotificationScheduled(for city: String) {
         hasNotificationsEnabled = true
         updateNotificationButtonIcon()
-        
-        let alert = UIAlertController(
-            title: "Done",
-            message: "Notification are enabled for \(city)",
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
     }
 }
 
@@ -426,6 +437,12 @@ extension MainViewController: NotificationSettingsViewDelegate {
         case .once(let date):
             presenter.scheduleOneTimeNotification(for: currentCityName, at: date)
         }
+        
+        NotificationCenter.default.post(
+            name: .notificationStateDidChange,
+            object: nil,
+            userInfo: ["cityName": currentCityName, "enabled": true]
+        )
         
         view.hide()
     }

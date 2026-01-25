@@ -110,10 +110,6 @@ class FavoritesViewPresenter: FavoritesViewPresenterProtocol {
             
             if granted {
                 self.scheduleDailyNotification(for: cityName, hour: hour, minute: minute)
-            } else {
-                DispatchQueue.main.async {
-                    self.view?.showNotificationPermissionAlert()
-                }
             }
         }
     }
@@ -124,10 +120,6 @@ class FavoritesViewPresenter: FavoritesViewPresenterProtocol {
             
             if granted {
                 self.scheduleOnceNotification(for: cityName, date: date)
-            } else {
-                DispatchQueue.main.async {
-                    self.view?.showNotificationPermissionAlert()
-                }
             }
         }
     }
@@ -164,18 +156,17 @@ class FavoritesViewPresenter: FavoritesViewPresenterProtocol {
         print("Daily notification scheduled for \(cityName) at \(hour):\(String(format: "%02d", minute))")
     }
     
-    /// Планирует однократное уведомление
     private func scheduleOnceNotification(for cityName: String, date: Date) {
         guard let cachedWeather = dataCoreManager.getCurrentWeather(for: cityName) else {
             print("No cached weather for \(cityName)")
             DispatchQueue.main.async { [weak self] in
-                self?.view?.showError("Нет сохранённых данных о погоде для \(cityName)")
+                self?.view?.showError("No data for \(cityName)")
             }
             return
         }
         
         let temperature = Int(cachedWeather.temperature)
-        let description = cachedWeather.weatherDescription ?? "Нет данных"
+        let description = cachedWeather.weatherDescription ?? "No Data"
         
         notificationService.scheduleWeatherNotification(
             for: cityName,
